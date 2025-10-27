@@ -143,6 +143,13 @@ public class YodaTokenTests
 		sut.TokenType.Should().Be(TokenType.Directive);
 		sut.ToString().Should().Be($"[{expectedDirective}]");
 		sut.ParameterType.Should().Be(ParameterTypes.None);
+		
+		//	Verify that a directive is of type YodaDirectiveToken
+		sut.Should().BeOfType<YodaDirectiveToken>();
+		YodaDirectiveToken dt = (sut as  YodaDirectiveToken)!;
+		dt.Should().NotBeNull();
+		//	None of the tests should yield a valid DirectiveType value 
+		dt.DirectiveType.Should().Be(DirectiveType.Unknown);
 	}
 
 	private static readonly string[] IndentStrings = ["", " ", "\t"];
