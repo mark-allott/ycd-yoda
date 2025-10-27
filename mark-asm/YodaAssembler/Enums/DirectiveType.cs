@@ -8,4 +8,5 @@ public enum DirectiveType
 	Constants = 3,
 	Prog = 0x11,
 	Const = 0x13,
+	Code = 0x21,
 }
