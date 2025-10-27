@@ -31,8 +31,8 @@ public partial record YodaToken
 		if (tokenType.Equals(TokenType.Unknown))
 			throw new ArgumentOutOfRangeException(nameof(tokenType), TokenType.Unknown,
 				"Unknown is an invalid token type");
-		ArgumentOutOfRangeException.ThrowIfLessThan(0, lineNumber, nameof(lineNumber));
-		ArgumentOutOfRangeException.ThrowIfLessThan(0, lineSequence, nameof(lineSequence));
+		ArgumentOutOfRangeException.ThrowIfLessThan(lineNumber, 0, nameof(lineNumber));
+		ArgumentOutOfRangeException.ThrowIfLessThan(lineSequence, 0, nameof(lineSequence));
 
 		TokenType = tokenType;
 		LineNumber = lineNumber;
@@ -61,6 +61,8 @@ public partial record YodaToken
 	/// <exception cref="ArgumentException"></exception>
 	private static YodaToken Create(TokenType tokenType, int lineNumber, int lineSequence, string text)
 	{
+		ArgumentNullException.ThrowIfNull(text, nameof(text));
+
 		var regex = tokenType switch
 		{
 			TokenType.Comment => TokenRegex.IsComment(),
