@@ -4,7 +4,7 @@ using YodaAssembler.Interfaces;
 
 namespace YodaAssembler.Records;
 
-public partial record YodaToken
+public record YodaToken
 	: IToken
 {
 	#region IToken implementation
@@ -80,11 +80,48 @@ public partial record YodaToken
 			_ => throw new ArgumentOutOfRangeException(nameof(tokenType), tokenType, "Unhandled value")
 		};
 		var m = regex.Match(text);
-		return m.Success
-			? new YodaToken(tokenType, lineNumber, lineSequence, m.Groups[1].Value)
-			: throw new ArgumentException($"Invalid {tokenType}", nameof(text));
+		if (!m.Success)
+			throw new ArgumentException($"Invalid {tokenType}", nameof(text));
+
+		switch (tokenType)
+		{
+			case TokenType.LiteralNumber:
+				return CreateNumericValueToken(m, lineNumber, lineSequence, tokenType);
+			
+			case TokenType.DirectNumber:
+			case TokenType.IndirectNumber:
+				var numericToken = CreateNumericValueToken(m, lineNumber, lineSequence, tokenType);
+				return tokenType == TokenType.DirectNumber
+					? YodaCompositeToken.CreateDirectNumber(lineNumber, lineSequence, text, numericToken)
+					: YodaCompositeToken.CreateIndirectNumber(lineNumber, lineSequence, text, numericToken);
+
+			default:
+				return new YodaToken(tokenType, lineNumber, lineSequence, m.Groups[1].Value);
+		}
 	}
 
+	/// <summary>
+	/// Returns a <see cref="YodaNumericValueToken"/> record based on the regex matches contained in <paramref name="m"/>
+	/// </summary>
+	/// <param name="m">The regex matches detected</param>
+	/// <param name="lineNumber">The line on which the source appears</param>
+	/// <param name="lineSequence">The position within the line</param>
+	/// <param name="tokenType">The type of token to create</param>
+	/// <returns>A <see cref="YodaNumericValueToken"/> record of the appropriate type (hex, binary or decimal)</returns>
+	/// <exception cref="ArgumentException"></exception>
+	private static YodaNumericValueToken CreateNumericValueToken(Match m, int lineNumber, int lineSequence, TokenType tokenType)
+	{
+		if (m.Groups[2].Success) //	Should be a hex number
+			return YodaHexNumberToken.Create(lineNumber, lineSequence, m.Groups[1].Value);
+		if (m.Groups[3].Success) //	Should be a binary number in form 0b0000_1111
+			return YodaBinaryNumberToken.Create(lineNumber, lineSequence, m.Groups[1].Value);
+		if (m.Groups[5].Success) //	Should be a binary number in form 0b00001111
+			return YodaBinaryNumberToken.Create(lineNumber, lineSequence, m.Groups[1].Value);
+		if (m.Groups[6].Success) //	Should be a decimal number
+			return YodaDecimalNumberToken.Create(lineNumber, lineSequence, m.Groups[1].Value);
+		throw new ArgumentException($"Invalid match detected for {tokenType}");
+	}
+	
 	/// <summary>
 	/// Static constructor to yield a "comment" token at the specified position
 	/// </summary>
