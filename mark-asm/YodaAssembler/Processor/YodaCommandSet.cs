@@ -5,8 +5,9 @@ namespace YodaAssembler.Processor;
 
 public static class YodaCommandSet
 {
-	private static readonly ParameterTypes ImmediateOrDirect = ParameterTypes.LiteralNumber | ParameterTypes.Symbol |
-	                                                           ParameterTypes.DirectNumber | ParameterTypes.DirectSymbol;
+	public const ParameterTypes ImmediateOrDirect = ParameterTypes.LiteralNumber | ParameterTypes.Symbol |
+	                                                ParameterTypes.DirectNumber | ParameterTypes.DirectSymbol;
+
 	public static readonly List<YodaCommand> Commands =
 	[
 		new YodaCommand(0x00, "halt"),
