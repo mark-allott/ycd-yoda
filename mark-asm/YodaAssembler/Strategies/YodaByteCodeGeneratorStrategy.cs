@@ -72,6 +72,11 @@ public class YodaByteCodeGeneratorStrategy
 		if (tokens.Count != 1 + command.YodaCommand.ParameterCount)
 			throw new TokeniserException(LineNumber, $"Incorrect number of parameters for {command}");
 
+		var parameters = Enumerable.Range(0, tokens.Count)
+			.Select(i => new { ParamNumber = i, Token = tokens[i] })
+			.Where(q => q.ParamNumber > 0)
+			.ToList();
+
 		var bytes = new List<byte?>();
 
 		//	Extract the opcode for the command
@@ -83,8 +88,15 @@ public class YodaByteCodeGeneratorStrategy
 		bytes.Add(commandByte);
 
 		//	Any subsequent tokens get handled now
-		foreach (var token in tokens[1..])
+		foreach (var parameter in parameters)
 		{
+			var token = parameter.Token;
+			var allowedTypes = command.YodaCommand.ParameterTypes[parameter.ParamNumber - 1];
+			var paramType = token.ParameterType;
+
+			if(paramType.Equals(ParameterTypes.None) || !allowedTypes.HasFlag(paramType))
+				throw new TokeniserException(LineNumber, $"Incorrect parameter type {paramType} for {command.YodaCommand.Mnemonic}");
+			
 			switch (token.TokenType)
 			{
 				case TokenType.LiteralChar:

@@ -114,7 +114,7 @@ public class YodaByteCodeGeneratorStrategyTests
 	{
 		//	Push one of the non-command tokens as the first element in a program
 		foreach (var tokenType in TestableTokens)
-			yield return [DirectiveType.Program, new YodaToken[] { CreateToken(tokenType, null) }];
+			yield return [DirectiveType.Program, new[] { CreateToken(tokenType, null) }];
 
 		//	Get	a list of commands which expect at least one parameter to be present
 		var commandsWithParameters = YodaCommandSet.Commands
@@ -126,7 +126,7 @@ public class YodaByteCodeGeneratorStrategyTests
 			yield return [DirectiveType.Program, new YodaToken[] { YodaCommandToken.Create(1, 0, command.Mnemonic, command) }];
 
 		//	The following are "good" token types for parameters
-		var validParameterTokensTypes = new TokenType[]
+		var validParameterTokensTypes = new[]
 		{
 			TokenType.LiteralChar,
 			TokenType.LiteralNumber,
@@ -191,18 +191,24 @@ public class YodaByteCodeGeneratorStrategyTests
 	{
 		var oneParamCommands = YodaCommandSet.Commands
 			.Where(q => q.ParameterCount == 1)
-			.SelectMany(_ => ValidParameterTypes, (c, p) => new { Command = c, Parameters = new[] { p } })
+			.SelectMany(c => ValidParameterTypes.Where(p => c.ParameterTypes[0].HasFlag(p)),
+				(c, p) => new { Command = c, Parameters = new[] { p } })
 			.ToList();
 		var twoParamCommands = YodaCommandSet.Commands
 			.Where(q => q.ParameterCount == 2)
-			.SelectMany(_ => ValidParameterTypes, (c, p) => new { Command = c, P1 = p })
-			.SelectMany(_ => ValidParameterTypes, (cp1, p2) => new { cp1.Command, Parameters = new[] { cp1.P1, p2 } })
+			.SelectMany(c => ValidParameterTypes.Where(p => c.ParameterTypes[0].HasFlag(p)),
+				(c, p) => new { Command = c, P1 = p })
+			.SelectMany(c => ValidParameterTypes.Where(p => c.Command.ParameterTypes[1].HasFlag(p)),
+				(cp1, p2) => new { cp1.Command, Parameters = new[] { cp1.P1, p2 } })
 			.ToList();
 		var threeParamCommands = YodaCommandSet.Commands
 			.Where(q => q.ParameterCount == 3)
-			.SelectMany(c => ValidParameterTypes, (c, p1) => new { c, P1 = p1 })
-			.SelectMany(_ => ValidParameterTypes, (cp1, p2) => new { cp1.c, cp1.P1, P2 = p2 })
-			.SelectMany(_ => ValidParameterTypes, (cp12, p3) => new { Command = cp12.c, Parameters = new[] { cp12.P1, cp12.P2, p3 } })
+			.SelectMany(c => ValidParameterTypes.Where(p => c.ParameterTypes[0].HasFlag(p)),
+				(c, p) => new { Command = c, P1 = p })
+			.SelectMany(c => ValidParameterTypes.Where(p => c.Command.ParameterTypes[1].HasFlag(p)),
+				(cp1, p2) => new { cp1.Command, cp1.P1, P2 = p2 })
+			.SelectMany(c => ValidParameterTypes.Where(p => c.Command.ParameterTypes[2].HasFlag(p)),
+				(cp12, p3) => new { cp12.Command, Parameters = new[] { cp12.P1, cp12.P2, p3 } })
 			.ToList();
 
 		foreach (var c in oneParamCommands)
