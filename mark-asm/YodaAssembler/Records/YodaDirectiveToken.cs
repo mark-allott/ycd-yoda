@@ -11,7 +11,7 @@ public record YodaDirectiveToken
 	protected YodaDirectiveToken(int lineNumber, int lineSequence, string? text)
 		: base(TokenType.Directive, lineNumber, lineSequence, text)
 	{
-		DirectiveType = text?.GetDirectiveType() ?? DirectiveType.Unknown;
+		DirectiveType = $"[{text}]".GetDirectiveType();
 	}
 
 	public static YodaDirectiveToken Create(int lineNumber, int lineSequence, string? text)
