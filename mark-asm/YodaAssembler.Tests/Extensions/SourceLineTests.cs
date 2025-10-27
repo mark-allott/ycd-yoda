@@ -20,7 +20,7 @@ public sealed class SourceLineTests
 	[DataRow(" a bc ", false, DisplayName = "test ' a bc '")]
 	public void ValidateIsBlank(string text, bool expected)
 	{
-		var sut = new SourceLine() { LineNumber = 0, Text = text };
+		var sut = new SourceLine(0, text);
 		sut.IsBlank.Should().Be(expected);
 	}
 
@@ -94,7 +94,7 @@ public sealed class SourceLineTests
 	[DataRow("[Data]", true, DisplayName = "test Data")]
 	public void ValidateHasDirective(string text, bool expected)
 	{
-		var sut = new SourceLine() { LineNumber = 0, Text = text }.HasDirective;
+		var sut = new SourceLine(0, text).HasDirective;
 		sut.Should().Be(expected);
 	}
 
@@ -133,18 +133,18 @@ public sealed class SourceLineTests
 	[DataRow("dummy", false, DisplayName = "test 'dummy'")]
 	[DataRow(":", false, DisplayName = "test colon with no symbols")]
 	[DataRow("a:", false, DisplayName = "test colon with a prefix")]
-	[DataRow(":a", true,  DisplayName = "test ':a'")]
-	[DataRow(": a", false,  DisplayName = "test ': a'")]
-	[DataRow(" :a", true,  DisplayName = "test ' :a'")]
-	[DataRow("\t:a", true,  DisplayName = "test '\t:a'")]
-	[DataRow(":a ", true,  DisplayName = "test ':a '")]
-	[DataRow(" :a ", true,  DisplayName = "test ' :a '")]
-	[DataRow("\t:a ", true,  DisplayName = "test '\t:a '")]
-	[DataRow("\t:a\t", true,  DisplayName = "test '\t:a\t'")]
-	[DataRow(":a ;comment", true,  DisplayName = "test ':a ;comment'")]
-	[DataRow(" :a ;comment", true,  DisplayName = "test ' :a ;comment'")]
-	[DataRow("\t:a ;comment", true,  DisplayName = "test '\t:a ;comment'")]
-	[DataRow("\t:a\t;comment", true,  DisplayName = "test '\t:a\t;comment'")]
+	[DataRow(":a", true, DisplayName = "test ':a'")]
+	[DataRow(": a", false, DisplayName = "test ': a'")]
+	[DataRow(" :a", true, DisplayName = "test ' :a'")]
+	[DataRow("\t:a", true, DisplayName = "test '\t:a'")]
+	[DataRow(":a ", true, DisplayName = "test ':a '")]
+	[DataRow(" :a ", true, DisplayName = "test ' :a '")]
+	[DataRow("\t:a ", true, DisplayName = "test '\t:a '")]
+	[DataRow("\t:a\t", true, DisplayName = "test '\t:a\t'")]
+	[DataRow(":a ;comment", true, DisplayName = "test ':a ;comment'")]
+	[DataRow(" :a ;comment", true, DisplayName = "test ' :a ;comment'")]
+	[DataRow("\t:a ;comment", true, DisplayName = "test '\t:a ;comment'")]
+	[DataRow("\t:a\t;comment", true, DisplayName = "test '\t:a\t;comment'")]
 	public void ValidateHasLabel(string text, bool expected)
 	{
 		var sut = text.HasLabel();
