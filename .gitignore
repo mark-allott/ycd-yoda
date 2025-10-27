@@ -6,3 +6,4 @@ riderModule.iml
 YODA_Python/venv/
 YODA_TypeScript/node_modules/
 YODA_Python/__pycache__/
+.idea/
