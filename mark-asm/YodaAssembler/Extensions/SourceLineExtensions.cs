@@ -37,6 +37,16 @@ public static partial class SourceLineExtensions
 	}
 
 	/// <summary>
+	/// Extracts a comment from the <paramref name="line"/>
+	/// </summary>
+	/// <param name="line">The line of source to be checked</param>
+	/// <returns>The comment associated with the line</returns>
+	public static string GetComment(this SourceLine line)
+	{
+		return line.Text.GetComment();
+	}
+	
+	/// <summary>
 	/// Determines whether the <paramref name="line"/> contains an assembler directive
 	/// </summary>
 	/// <param name="line">The line of source to be checked</param>
@@ -57,6 +67,16 @@ public static partial class SourceLineExtensions
 	}
 
 	/// <summary>
+	/// Converts the <paramref name="directive"/> into its masked equivalent
+	/// </summary>
+	/// <param name="directive">The directive to be masked</param>
+	/// <returns>The <see cref="DirectiveType"/>, masked to lowest nibble values</returns>
+	private static DirectiveType MaskedDirective(DirectiveType directive)
+	{
+		return (DirectiveType)((int)directive & 0x0f);
+	}
+
+	/// <summary>
 	/// Convert the directive appearing in source as [text] into the corresponding <see cref="DirectiveType"/>
 	/// </summary>
 	/// <param name="text">The text to check for the directive</param>
@@ -67,9 +87,23 @@ public static partial class SourceLineExtensions
 		var result = text.GetDirective<DirectiveType>();
 		//	Mask the returned value with 0x0f
 		//	This has the effect of limiting the output directives to the "base" values, but still permitting use of the abbreviations or alternates
-		return (DirectiveType)((int)result & 0x0f);
+		return MaskedDirective(result);
 	}
-	
+
+	/// <summary>
+	/// Wrapper around <see cref="TokenTypeExtensions.GetDirectiveDetail"/>, but ensures the directive is of type <see cref="DirectiveType"/> and masked to lowest nibble values
+	/// </summary>
+	/// <param name="line">The text to be parsed for a directive</param>
+	/// <returns>The <see cref="DirectiveType"/>, plus and optional parameter and comment associated with it</returns>
+	/// <remarks>If the parameter or comment is missing, then a <c>null</c> value shall be returned for them</remarks>
+	public static (DirectiveType directive, string? parameter, string? comment) GetDirectiveDetail(this SourceLine line)
+	{
+		if (string.IsNullOrWhiteSpace(line.Text))
+			return (DirectiveType.Unknown, null!, null!);
+		var (directive, parameter, comment) = line.Text.GetDirectiveDetail<DirectiveType>();
+		return (MaskedDirective(directive), parameter, comment);
+	}
+
 	/// <summary>
 	/// Determines whether the <paramref name="line"/> contains a label identifier as the first part of the input
 	/// </summary>
