@@ -1,5 +1,4 @@
 using YodaAssembler.Enums;
-using YodaAssembler.Exceptions;
 using YodaAssembler.Interfaces;
 
 namespace YodaAssembler.Records;
@@ -87,39 +86,6 @@ public record YodaTokenByteCode
 	public static YodaTokenByteCode Data(int lineNumber, int memoryLocation, IEnumerable<YodaToken> tokens,
 		IByteCodeGeneratorStrategy generatorStrategy)
 		=> new YodaTokenByteCode(lineNumber, memoryLocation, DirectiveType.Data, tokens, generatorStrategy);
-
-	#endregion
-
-	#region Methods
-
-	public static int CalculateByteCount(int lineNumber, DirectiveType directiveType, IEnumerable<YodaToken> tokens)
-	{
-		var tokenList = new List<YodaToken>(tokens);
-		if (directiveType is DirectiveType.Program)
-		{
-			return tokenList.Count;
-		}
-		else
-		{
-			if (directiveType is DirectiveType.Data)
-			{
-				var result = 0;
-
-				foreach (var token in tokenList)
-					result += token.TokenType switch
-					{
-						TokenType.LiteralString => token.Text?.Replace("\\", "").Length ?? 0,
-						TokenType.LiteralChar => 1,
-						TokenType.LiteralNumber => 1,
-						TokenType.Symbol => 1,
-						_ => throw new YodaByteCodeException(lineNumber, $"Invalid token type: '{token.TokenType}'")
-					};
-				return result;
-			}
-		}
-
-		throw new YodaByteCodeException(lineNumber, $"Invalid directive type [{directiveType}]");
-	}
 
 	#endregion
 }
