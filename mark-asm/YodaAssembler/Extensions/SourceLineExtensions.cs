@@ -51,9 +51,9 @@ public static partial class SourceLineExtensions
 	/// </summary>
 	/// <param name="line">The line of source to be checked</param>
 	/// <returns>True if the line contains one of the assembler directives such as <c>[DATA]</c>, or <c>[PROGRAM]</c></returns>
-	public static bool HasDirective(this SourceLine line)
+	public static bool IsDirective(this SourceLine line)
 	{
-		return line.Text.HasDirective();
+		return line.Text.IsDirective();
 	}
 
 	/// <summary>
@@ -71,7 +71,7 @@ public static partial class SourceLineExtensions
 	/// </summary>
 	/// <param name="directive">The directive to be masked</param>
 	/// <returns>The <see cref="DirectiveType"/>, masked to lowest nibble values</returns>
-	private static DirectiveType MaskedDirective(DirectiveType directive)
+	private static DirectiveType MaskedDirectiveType(DirectiveType directive)
 	{
 		return (DirectiveType)((int)directive & 0x0f);
 	}
@@ -87,7 +87,7 @@ public static partial class SourceLineExtensions
 		var result = text.GetDirective<DirectiveType>();
 		//	Mask the returned value with 0x0f
 		//	This has the effect of limiting the output directives to the "base" values, but still permitting use of the abbreviations or alternates
-		return MaskedDirective(result);
+		return MaskedDirectiveType(result);
 	}
 
 	/// <summary>
@@ -101,7 +101,7 @@ public static partial class SourceLineExtensions
 		if (string.IsNullOrWhiteSpace(line.Text))
 			return (DirectiveType.Unknown, null!, null!);
 		var (directive, parameter, comment) = line.Text.GetDirectiveDetail<DirectiveType>();
-		return (MaskedDirective(directive), parameter, comment);
+		return (MaskedDirectiveType(directive), parameter, comment);
 	}
 
 	/// <summary>
