@@ -57,7 +57,7 @@ public record SourceLine
 
 	public bool IsLabel => this.HasLabel();
 	public bool HasComment => this.HasComment();
-	public bool HasDirective => this.IsDirective();
+	public bool IsDirective => this.IsDirective();
 	public DirectiveType Directive => Text.GetDirectiveType();
 
 	#endregion

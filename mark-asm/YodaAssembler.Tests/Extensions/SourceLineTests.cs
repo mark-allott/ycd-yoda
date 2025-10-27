@@ -33,7 +33,7 @@ public sealed class SourceLineTests
 	/// Checks to see if the directives can be detected correctly
 	/// </summary>
 	/// <param name="text">The source text to check</param>
-	/// <param name="expected">The expected result after calling the <see cref="SourceLineExtensions.HasDirective"/> method</param>
+	/// <param name="expected">The expected result after calling the <see cref="SourceLineExtensions.IsDirective"/> method</param>
 	[TestMethod]
 	[DataRow("", false, DisplayName = "test empty")]
 	[DataRow("[]", false, DisplayName = "test []")]
@@ -58,7 +58,7 @@ public sealed class SourceLineTests
 	[DataRow("[CODE]", true, DisplayName = "test CODE")]
 	public void ValidateHasDirective(string text, bool expected)
 	{
-		var sut = new SourceLine(1, text).HasDirective;
+		var sut = new SourceLine(1, text).IsDirective;
 		sut.Should().Be(expected);
 	}
 
