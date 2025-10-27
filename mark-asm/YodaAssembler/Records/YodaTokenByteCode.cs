@@ -74,6 +74,7 @@ public record YodaTokenByteCode
 		ArgumentNullException.ThrowIfNull(generatorStrategy);
 
 		LineNumber = lineNumber;
+		MemoryLocation = memoryLocation;
 		_tokens = tokens.ToList();
 		DirectiveType = directiveType;
 		Bytes = generatorStrategy.Generate(directiveType, _tokens);
