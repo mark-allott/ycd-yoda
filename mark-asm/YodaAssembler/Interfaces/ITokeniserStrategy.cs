@@ -1,3 +1,5 @@
+using YodaAssembler.Records;
+
 namespace YodaAssembler.Interfaces;
 
 /// <summary>
@@ -13,4 +15,11 @@ public interface ITokeniserStrategy<out T>
 	/// <param name="text">The source to be tokenised</param>
 	/// <returns>The token equivalents of the source</returns>
 	IEnumerable<T> Tokenise(IEnumerable<string> text);
+
+	/// <summary>
+	/// Converts the supplied <paramref name="source"/> into its equivalent tokens
+	/// </summary>
+	/// <param name="source">The source to be tokenised</param>
+	/// <returns>The tokenised equivalent of the <paramref name="source"/></returns>
+	IEnumerable<T> Tokenise(IEnumerable<SourceLine> source);
 }
