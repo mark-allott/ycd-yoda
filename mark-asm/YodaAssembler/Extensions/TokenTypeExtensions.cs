@@ -206,7 +206,7 @@ public static partial class TokenTypeExtensions
 	/// <typeparam name="T">The enum type to specify directive names</typeparam>
 	/// <returns>The matching directive name and any parameter and comments supplied with it</returns>
 	/// <remarks>Any missing elements shall be represented by <c>null</c></remarks>
-	public static (string name, string parameter, string comment) GetDirectiveParts<T>(this string text)
+	public static (string name, string? parameter, string? comment) GetDirectiveParts<T>(this string text)
 		where T : struct, Enum
 	{
 		var m = GetValidDirectivesRegex<T>().Match(text);
@@ -215,10 +215,10 @@ public static partial class TokenTypeExtensions
 			: null!;
 		var parameter = m.Success && m.Groups[2].Success
 			? m.Groups[2].Value
-			: null!;
+			: null;
 		var comment = m.Success && m.Groups[4].Success
 			? m.Groups[4].Value
-			: null!;
+			: null;
 		return (name, parameter, comment);
 	}
 
@@ -245,15 +245,15 @@ public static partial class TokenTypeExtensions
 	/// <param name="text">The text to be checked</param>
 	/// <typeparam name="T">The enum type to specify directive names</typeparam>
 	/// <returns>A <see cref="Tuple{T1,T2,T3}"/> of the enum value associated with the directive, any parameter and comment</returns>
-	public static (T directive, string parameter, string comment) GetDirectiveDetail<T>(this string text)
+	public static (T directive, string? parameter, string? comment) GetDirectiveDetail<T>(this string text)
 		where T : struct, Enum
 	{
 		var (name, parameter, comment) = GetDirectiveParts<T>(text);
 		return string.IsNullOrWhiteSpace(name)
-			? (default, null!, null!)
+			? (default, null, null)
 			: Enum.TryParse<T>(name, true, out var result)
 				? (result, parameter, comment)
-				: (default, null!, null!);
+				: (default, null, null);
 	}
 
 	#endregion
