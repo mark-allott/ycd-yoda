@@ -24,6 +24,11 @@ public sealed class SourceLineTests
 		sut.IsBlank.Should().Be(expected);
 	}
 
+	/*
+	 * Checks for the IsComment and HasComment extension methods are already performed in the TokenTypeExtensionsTests
+	 * as the equivalent in SourceLineExtensions is simply a wrapper around the existing extension methods
+	 */
+	
 	/// <summary>
 	/// Checks to see if the directives can be detected correctly
 	/// </summary>
@@ -48,9 +53,40 @@ public sealed class SourceLineTests
 	[DataRow("[Const]", true, DisplayName = "test Const")]
 	[DataRow("[Constants]", true, DisplayName = "test Constants")]
 	[DataRow("[Data]", true, DisplayName = "test Data")]
+	[DataRow("[code]", true, DisplayName = "test code")]
+	[DataRow("[Code]", true, DisplayName = "test Code")]
+	[DataRow("[CODE]", true, DisplayName = "test CODE")]
 	public void ValidateHasDirective(string text, bool expected)
 	{
 		var sut = new SourceLine(1, text).HasDirective;
 		sut.Should().Be(expected);
+	}
+
+	[TestMethod]
+	[DataRow("", DirectiveType.Unknown, DisplayName = "test empty")]
+	[DataRow("[]", DirectiveType.Unknown, DisplayName = "test []")]
+	[DataRow("[directive]", DirectiveType.Unknown, DisplayName = "test [directive]")]
+	[DataRow("[program]", DirectiveType.Program, DisplayName = "test [program]")]
+	[DataRow("[PROGRAM]", DirectiveType.Program, DisplayName = "test [PROGRAM]")]
+	[DataRow("[Program]", DirectiveType.Program, DisplayName = "test [Program]")]
+	[DataRow("[data]", DirectiveType.Data, DisplayName = "test [data]")]
+	[DataRow("[DATA]", DirectiveType.Data, DisplayName = "test [DATA]")]
+	[DataRow("[Data]", DirectiveType.Data, DisplayName = "test [Data]")]
+	[DataRow("[constants]", DirectiveType.Constants, DisplayName = "test [constants]")]
+	[DataRow("[CONSTANTS]", DirectiveType.Constants, DisplayName = "test [CONSTANTS]")]
+	[DataRow("[Constants]", DirectiveType.Constants, DisplayName = "test [Constants]")]
+	[DataRow("[prog]", DirectiveType.Program, DisplayName = "test [prog]")]
+	[DataRow("[PROG]", DirectiveType.Program, DisplayName = "test [PROG]")]
+	[DataRow("[Prog]", DirectiveType.Program, DisplayName = "test [Prog]")]
+	[DataRow("[const]", DirectiveType.Constants, DisplayName = "test [const]")]
+	[DataRow("[CONST]", DirectiveType.Constants, DisplayName = "test [CONST]")]
+	[DataRow("[Const]", DirectiveType.Constants, DisplayName = "test [Const]")]
+	[DataRow("[code]", DirectiveType.Program, DisplayName = "test [code]")]
+	[DataRow("[CODE]", DirectiveType.Program, DisplayName = "test [CODE]")]
+	[DataRow("[Code]", DirectiveType.Program, DisplayName = "test [Code]")]
+	public void ValidateGetDirectiveType(string  text, DirectiveType expected)
+	{
+		var sut = new SourceLine(1, text);
+		sut.GetDirectiveType().Should().Be(expected);
 	}
 }
