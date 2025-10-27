@@ -8,7 +8,7 @@ using YodaAssembler.Records;
 namespace YodaAssembler.Strategies;
 
 public partial class YodaTokeniserStrategy
-	: ITokeniserStrategy<YodaToken>
+	: IYodaTokeniserStrategy
 {
 	#region Private Members
 
@@ -41,7 +41,7 @@ public partial class YodaTokeniserStrategy
 	/// characterA    = 'A' ; with a comment
 	/// </code></remarks>
 	private static readonly YodaCommand ConstCommand = new YodaCommand(0xff, "[CONST]", 1,
-		[ ParameterTypes.LiteralNumber | ParameterTypes.LiteralChar | ParameterTypes.Symbol]);
+		[ParameterTypes.LiteralNumber | ParameterTypes.LiteralChar | ParameterTypes.Symbol]);
 
 	#endregion
 
@@ -55,7 +55,7 @@ public partial class YodaTokeniserStrategy
 
 	#endregion
 
-	#region ITokeniserStrategy<YodaToken> Members
+	#region IYodaTokeniserStrategy Members
 
 	public IEnumerable<YodaToken> Tokenise(IEnumerable<string> text)
 	{
@@ -335,12 +335,12 @@ public partial class YodaTokeniserStrategy
 
 		if (!m.Success)
 			throw new TokeniserException(line, "Invalid constant declaration");
-		
+
 		//	Split the matches into their various parts for easier tracking
 		var symbol = m.Groups[1].Value;
 		var valueString = m.Groups[2].Value;
-		var comment = m.Groups[3].Success 
-			? m.Groups[3].Value 
+		var comment = m.Groups[3].Success
+			? m.Groups[3].Value
 			: string.Empty;
 
 		//	Attempt to break the value into a parameter token, checking it will conform to permitted types
@@ -351,7 +351,7 @@ public partial class YodaTokeniserStrategy
 		//	Add the value
 		constTokens.AddRange(valueTokens);
 		//	Add any optional comment
-		if(!string.IsNullOrWhiteSpace(comment))
+		if (!string.IsNullOrWhiteSpace(comment))
 			constTokens.Add(YodaToken.Comment(line.LineNumber, 2, $";{comment}"));
 		return constTokens;
 	}
