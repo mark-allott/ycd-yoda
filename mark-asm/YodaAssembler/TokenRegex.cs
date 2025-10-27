@@ -79,7 +79,7 @@ public static partial class TokenRegex
 	/// Extracts a literal string from the supplied text
 	/// </summary>
 	/// <returns></returns>
-	[GeneratedRegex(@"""(.*)""", RegexOptions.Compiled)]
+	[GeneratedRegex(@"^\s*""(.*)""", RegexOptions.Compiled)]
 	public static partial Regex LiteralString();
 
 	/// <summary>
