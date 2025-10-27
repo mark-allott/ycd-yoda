@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using YodaAssembler.Enums;
 using YodaAssembler.Records;
 
@@ -69,7 +68,6 @@ public static partial class SourceLineExtensions
 		//	Mask the returned value with 0x0f
 		//	This has the effect of limiting the output directives to the "base" values, but still permitting use of the abbreviations or alternates
 		return (DirectiveType)((int)result & 0x0f);
-		//	Blank text is automatically unknown... What were you thinking???
 	}
 	
 	/// <summary>
@@ -91,10 +89,4 @@ public static partial class SourceLineExtensions
 	{
 		return line.Text.GetLabel();
 	}
-	
-    [GeneratedRegex(@"^(\[(PROG(RAM)?|DATA|CONST(ANTS)?)\])", RegexOptions.IgnoreCase)]
-    private static partial Regex DirectiveRegex();
-
-    [GeneratedRegex(@"^:([A-Za-z_]\w*)(\s*)?(;)?")]
-    private static partial Regex LabelRegex();
 }
