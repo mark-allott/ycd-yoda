@@ -88,6 +88,19 @@ public class YodaTokeniserStategyTests
 		},
 		new[] { 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 10, 11, 11 }, 
 		new[] { 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 2, 0, 1 }, DisplayName = "[code]|[const]...")]
+	[DataRow("[code]|lff 0,1\t; comment|[data] 0x80|\t12 34 56 78 90|\t\"Test Text\"|\t'c' 'd' 'e' 'f'|\taSymbol", 
+		new []
+		{
+			TokenType.Directive, 
+			TokenType.Command, TokenType.LiteralNumber, TokenType.LiteralNumber, TokenType.Comment,
+			TokenType.Directive, TokenType.LiteralNumber,
+			TokenType.LiteralNumber, TokenType.LiteralNumber, TokenType.LiteralNumber, TokenType.LiteralNumber, TokenType.LiteralNumber,
+			TokenType.LiteralString,
+			TokenType.LiteralChar, TokenType.LiteralChar, TokenType.LiteralChar, TokenType.LiteralChar,
+			TokenType.Symbol
+		}, 
+		new[] { 1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 4, 5, 6, 6, 6, 6, 7 },
+		new[] { 0, 0, 1, 2, 3, 0, 1, 0, 1, 2, 3, 4, 0, 0, 1, 2, 3, 0 }, DisplayName = "[code]...|[data]...")]
 	public void ValidateParsedTokens(string sourceText, TokenType[] expectedTokens, int[] expectedLineNumbers,
 		int[] expectedLineSequences)
 	{
