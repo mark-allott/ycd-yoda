@@ -57,7 +57,7 @@ public static partial class TokenRegex
 	/// </ul>
 	/// </para>
 	/// </remarks>
-	[GeneratedRegex(@"^\s*:([A-Za-z_]\w{0,31})\s*(;(.*))?\s*$", RegexOptions.Compiled | RegexOptions.ECMAScript)]
+	[GeneratedRegex(@"^\s*:([A-Za-z_]\w{0,31})\s*(;\s*(.*))?\s*$", RegexOptions.Compiled | RegexOptions.ECMAScript)]
 	public static partial Regex HasLabel();
 
 	/// <summary>
