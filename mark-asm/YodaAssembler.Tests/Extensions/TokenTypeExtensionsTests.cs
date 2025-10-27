@@ -121,7 +121,6 @@ public class TokenTypeExtensionsTests
 	}
 
 	[TestMethod]
-	[DataRow("[program]", true, DisplayName = "test [program]")]
 	[DataRow(null, false, DisplayName = "test null")]
 	[DataRow("", false, DisplayName = "test ''")]
 	[DataRow("[]", false, DisplayName = "test []")]
@@ -139,9 +138,18 @@ public class TokenTypeExtensionsTests
 	[DataRow("[a] param\t;\tcomment", true, DisplayName = "test [a] param\t;\tcomment")]
 	[DataRow("[a] param\t; multiword comment", true, DisplayName = "test [a] param\t; multiword comment")]
 	[DataRow("[a] param\t;\tcomment\t", true, DisplayName = "test [a] param\t;\tcomment\t")]
+	[DataRow("[program]", true, DisplayName = "test [program]")]
+	[DataRow("[_]", false, DisplayName = "test [_]")]
+	[DataRow("[0]", false, DisplayName = "test [0]")]
+	[DataRow("[a.b]", false, DisplayName = "test [a.b]")]
+	[DataRow("[ a]", false, DisplayName = "test [ a]")]
+	[DataRow("[a ]", false, DisplayName = "test [a ]")]
+	[DataRow("[a_b]", true, DisplayName = "test [a_b]")]
+	[DataRow("[aLongDirectiveNameOk]", true, DisplayName = "test [aLongDirectiveNameOk]")]
+	[DataRow("[aLongDirectiveNameBad]", false, DisplayName = "test [aLongDirectiveNameBad]")]
 	public void ValidateHasDirective(string text, bool expected)
 	{
-		var sut = text.HasDirective();
+		var sut = text.IsDirective();
 		sut.Should().Be(expected);
 	}
 
