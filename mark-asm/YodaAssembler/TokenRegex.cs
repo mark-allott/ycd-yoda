@@ -100,7 +100,7 @@ public static partial class TokenRegex
 	/// <li>Decimal form: no prefix, but between 1 and 3 digits</li>
 	/// </ul>
 	/// </remarks>
-	[GeneratedRegex(@"^\s*((0[Xx][\dA-Fa-f]{1,2})|(0[Bb][01]{4}(_[01]{4})?)|(0[Bb][01]{1,8})|(\d{1,3}))\s*$", RegexOptions.Compiled)]
+	[GeneratedRegex(@"^\s*(0[Xx]([\dA-Fa-f]{1,2})|0[Bb]([01]{4}(_[01]{4})?)|0[Bb]([01]{1,8})|(\d{1,3}))\s*$", RegexOptions.Compiled)]
 	public static partial Regex LiteralNumber();
 
 	/// <summary>
@@ -135,7 +135,7 @@ public static partial class TokenRegex
 	/// <li>Decimal form: no prefix, but between 1 and 3 digits</li>
 	/// </ul>
 	/// </remarks>
-	[GeneratedRegex(@"^\s*\[\[((0[Xx][\dA-Fa-f]{1,2})|(0[Bb][01]{4}(_[01]{4})?)|(0[Bb][01]{1,8})|(\d{1,3}))\]\]\s*$", RegexOptions.Compiled)]
+	[GeneratedRegex(@"^\s*\[\[(0[Xx]([\dA-Fa-f]{1,2})|0[Bb]([01]{4}(_[01]{4})?)|0[Bb]([01]{1,8})|(\d{1,3}))\]\]\s*$", RegexOptions.Compiled)]
 	public static partial Regex IndirectNumber();
 
 	/// <summary>
