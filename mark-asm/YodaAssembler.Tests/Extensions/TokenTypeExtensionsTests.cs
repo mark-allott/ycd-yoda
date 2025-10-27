@@ -166,31 +166,34 @@ public class TokenTypeExtensionsTests
 	}
 
 	[TestMethod]
-	[DataRow("[program]", "program", "", DisplayName = "test [program]")]
-	[DataRow("[program]\t;comment", "program", "", DisplayName = "test [program]\t;comment")]
-	[DataRow("[Program] 0", "Program", "0", DisplayName = "test [Program] 0")]
-	[DataRow("[PROGRAM] 0 ;comment", "PROGRAM", "0", DisplayName = "test [PROGRAM] 0 ;comment")]
-	[DataRow("[data]", "data", "", DisplayName = "test [data]")]
-	[DataRow("[data] 0x80", "data", "0x80", DisplayName = "test [data] 0x80")]
-	[DataRow("[Data] ;\tcomment", "Data", "", DisplayName = "test [Data] ;\tcomment")]
-	[DataRow("[DATA] 0xC0\t;\tcomment", "DATA", "0xC0", DisplayName = "test [DATA] 0xC0\t;\tcomment")]
-	[DataRow("[constants]", "constants", "", DisplayName = "test [constants]")]
-	[DataRow("[Constants] abc", "Constants", "abc", DisplayName = "test [Constants] abc")]
-	[DataRow("[CONSTANTS] def\t;\tcomment", "CONSTANTS", "def", DisplayName = "test [CONSTANTS] def\t;\tcomment")]
-	[DataRow("[prog]", "prog", "", DisplayName = "test [prog]")]
-	[DataRow("[Prog] 0b0000", "Prog", "0b0000", DisplayName = "test [Prog] 0b0000")]
-	[DataRow("[PROG] ;another comment", "PROG", "", DisplayName = "test [PROG] ;another comment")]
-	[DataRow("[const]", "const", "", DisplayName = "test [const]")]
-	[DataRow("[Const] xyz ; comment", "Const", "xyz", DisplayName = "test [Const] xyz ; comment")]
-	[DataRow("[CONST] XYZ\t; comment", "CONST", "XYZ", DisplayName = "test [CONST] XYZ\t; comment")]
-	[DataRow("[code]", "code", "", DisplayName = "test [code]")]
-	[DataRow("[Code]\tdef", "Code", "def", DisplayName = "test [Code]\tdef")]
-	[DataRow("[CODE] def ;\tcomment", "CODE", "def", DisplayName = "test [CODE] def ;\tcomment")]
-	public void ValidateGetDirectiveNameAndParameter(string text, string expectedDirective, string expectedParam)
+	[DataRow("[program]", "program", null, null, DisplayName = "test [program]")]
+	[DataRow("[program]\t;comment", "program", null, "comment", DisplayName = "test [program]\t;comment")]
+	[DataRow("[Program] 0", "Program", "0", null, DisplayName = "test [Program] 0")]
+	[DataRow("[PROGRAM] 0 ;comment", "PROGRAM", "0", "comment", DisplayName = "test [PROGRAM] 0 ;comment")]
+	[DataRow("[data]", "data", null, null, DisplayName = "test [data]")]
+	[DataRow("[data] 0x80", "data", "0x80", null, DisplayName = "test [data] 0x80")]
+	[DataRow("[Data] ;\tcomment", "Data", null, "comment", DisplayName = "test [Data] ;\tcomment")]
+	[DataRow("[DATA] 0xC0\t;\tcomment", "DATA", "0xC0", "comment", DisplayName = "test [DATA] 0xC0\t;\tcomment")]
+	[DataRow("[constants]", "constants", null, null, DisplayName = "test [constants]")]
+	[DataRow("[Constants] abc", "Constants", "abc", null, DisplayName = "test [Constants] abc")]
+	[DataRow("[CONSTANTS] def\t;\tcomment", "CONSTANTS", "def", "comment",
+		DisplayName = "test [CONSTANTS] def\t;\tcomment")]
+	[DataRow("[prog]", "prog", null, null, DisplayName = "test [prog]")]
+	[DataRow("[Prog] 0b0000", "Prog", "0b0000", null, DisplayName = "test [Prog] 0b0000")]
+	[DataRow("[PROG] ;another comment", "PROG", null, "another comment", DisplayName = "test [PROG] ;another comment")]
+	[DataRow("[const]", "const", null, null, DisplayName = "test [const]")]
+	[DataRow("[Const] xyz ; comment", "Const", "xyz", "comment", DisplayName = "test [Const] xyz ; comment")]
+	[DataRow("[CONST] XYZ\t; comment", "CONST", "XYZ", "comment", DisplayName = "test [CONST] XYZ\t; comment")]
+	[DataRow("[code]", "code", null, null, DisplayName = "test [code]")]
+	[DataRow("[Code]\tdef", "Code", "def", null, DisplayName = "test [Code]\tdef")]
+	[DataRow("[CODE] def ;\tcomment", "CODE", "def", "comment", DisplayName = "test [CODE] def ;\tcomment")]
+	public void ValidateGetDirectiveParts(string text, string expectedDirective, string expectedParam,
+		string expectedComment)
 	{
-		var (name, parameter) = text.GetDirectiveNameAndParameter<DirectiveType>();
+		var (name, parameter, comment) = text.GetDirectiveParts<DirectiveType>();
 		name.Should().Be(expectedDirective);
 		parameter.Should().Be(expectedParam);
+		comment.Should().Be(expectedComment);
 	}
 
 	/// <summary>
@@ -228,34 +231,35 @@ public class TokenTypeExtensionsTests
 	}
 
 	[TestMethod]
-	[DataRow("[program]", DirectiveType.Program, "", DisplayName = "test [program]")]
-	[DataRow("[program]\t;comment", DirectiveType.Program, "", DisplayName = "test [program]\t;comment")]
-	[DataRow("[Program] 0", DirectiveType.Program, "0", DisplayName = "test [Program] 0")]
-	[DataRow("[PROGRAM] 0 ;comment", DirectiveType.Program, "0", DisplayName = "test [PROGRAM] 0 ;comment")]
-	[DataRow("[data]", DirectiveType.Data, "", DisplayName = "test [data]")]
-	[DataRow("[data] 0x80", DirectiveType.Data, "0x80", DisplayName = "test [data] 0x80")]
-	[DataRow("[Data] ;\tcomment", DirectiveType.Data, "", DisplayName = "test [Data] ;\tcomment")]
-	[DataRow("[DATA] 0xC0\t;\tcomment", DirectiveType.Data, "0xC0", DisplayName = "test [DATA] 0xC0\t;\tcomment")]
-	[DataRow("[constants]", DirectiveType.Constants, "", DisplayName = "test [constants]")]
-	[DataRow("[Constants] abc", DirectiveType.Constants, "abc", DisplayName = "test [Constants] abc")]
-	[DataRow("[CONSTANTS] def\t;\tcomment", DirectiveType.Constants, "def", DisplayName = "test [CONSTANTS] def\t;\tcomment")]
-	[DataRow("[prog]", DirectiveType.Prog, "", DisplayName = "test [prog]")]
-	[DataRow("[Prog] 0b0000", DirectiveType.Prog, "0b0000", DisplayName = "test [Prog] 0b0000")]
-	[DataRow("[PROG] ;another comment", DirectiveType.Prog, "", DisplayName = "test [PROG] ;another comment")]
-	[DataRow("[const]", DirectiveType.Const, "", DisplayName = "test [const]")]
-	[DataRow("[Const] xyz ; comment", DirectiveType.Const, "xyz", DisplayName = "test [Const] xyz ; comment")]
-	[DataRow("[CONST] XYZ\t; comment", DirectiveType.Const, "XYZ", DisplayName = "test [CONST] XYZ\t; comment")]
-	[DataRow("[code]", DirectiveType.Code, "", DisplayName = "test [code]")]
-	[DataRow("[Code]\tdef", DirectiveType.Code, "def", DisplayName = "test [Code]\tdef")]
-	[DataRow("[CODE] def ;\tcomment", DirectiveType.Code, "def", DisplayName = "test [CODE] def ;\tcomment")]
-	[DataRow("[dummy]", DirectiveType.Unknown, "", DisplayName = "test [dummy]")]
-	[DataRow("[dummy]\t;comment", DirectiveType.Unknown, "", DisplayName = "test [dummy]\t;comment")]
-	[DataRow("[dummy] 0", DirectiveType.Unknown, "", DisplayName = "test [dummy] 0")]
-	public void ValidateGetDirectiveAndParameter(string text, DirectiveType expectedDirective, string expectedParam)
+	[DataRow("[program]", DirectiveType.Program, null, null, DisplayName = "test [program]")]
+	[DataRow("[program]\t;comment", DirectiveType.Program, null, "comment", DisplayName = "test [program]\t;comment")]
+	[DataRow("[Program] 0", DirectiveType.Program, "0", null, DisplayName = "test [Program] 0")]
+	[DataRow("[PROGRAM] 0 ;comment", DirectiveType.Program, "0", "comment", DisplayName = "test [PROGRAM] 0 ;comment")]
+	[DataRow("[data]", DirectiveType.Data, null, null, DisplayName = "test [data]")]
+	[DataRow("[data] 0x80", DirectiveType.Data, "0x80", null, DisplayName = "test [data] 0x80")]
+	[DataRow("[Data] ;\tcomment", DirectiveType.Data, null, "comment", DisplayName = "test [Data] ;\tcomment")]
+	[DataRow("[DATA] 0xC0\t;\tcomment", DirectiveType.Data, "0xC0", "comment", DisplayName = "test [DATA] 0xC0\t;\tcomment")]
+	[DataRow("[constants]", DirectiveType.Constants, null, null, DisplayName = "test [constants]")]
+	[DataRow("[Constants] abc", DirectiveType.Constants, "abc", null, DisplayName = "test [Constants] abc")]
+	[DataRow("[CONSTANTS] def\t;\tcomment", DirectiveType.Constants, "def", "comment", DisplayName = "test [CONSTANTS] def\t;\tcomment")]
+	[DataRow("[prog]", DirectiveType.Prog, null, null, DisplayName = "test [prog]")]
+	[DataRow("[Prog] 0b0000", DirectiveType.Prog, "0b0000", null, DisplayName = "test [Prog] 0b0000")]
+	[DataRow("[PROG] ;another comment", DirectiveType.Prog, null, "another comment", DisplayName = "test [PROG] ;another comment")]
+	[DataRow("[const]", DirectiveType.Const, null, null, DisplayName = "test [const]")]
+	[DataRow("[Const] xyz ; comment", DirectiveType.Const, "xyz", "comment", DisplayName = "test [Const] xyz ; comment")]
+	[DataRow("[CONST] XYZ\t; comment", DirectiveType.Const, "XYZ", "comment", DisplayName = "test [CONST] XYZ\t; comment")]
+	[DataRow("[code]", DirectiveType.Code, null, null, DisplayName = "test [code]")]
+	[DataRow("[Code]\tdef", DirectiveType.Code, "def", null, DisplayName = "test [Code]\tdef")]
+	[DataRow("[CODE] def ;\tcomment", DirectiveType.Code, "def", "comment", DisplayName = "test [CODE] def ;\tcomment")]
+	[DataRow("[dummy]", DirectiveType.Unknown, null, null, DisplayName = "test [dummy]")]
+	[DataRow("[dummy]\t;comment", DirectiveType.Unknown, null, null, DisplayName = "test [dummy]\t;comment")]
+	[DataRow("[dummy] 0", DirectiveType.Unknown, null, null, DisplayName = "test [dummy] 0")]
+	public void ValidateGetDirectiveDetail(string text, DirectiveType expectedDirective, string expectedParam, string expectedComment)
 	{
-		var (directive, parameter) = text.GetDirectiveAndParameter<DirectiveType>();
+		var (directive, parameter, comment) = text.GetDirectiveDetail<DirectiveType>();
 		directive.Should().Be(expectedDirective);
 		parameter.Should().Be(expectedParam);
+		comment.Should().Be(expectedComment);
 	}
 
 	#endregion
@@ -325,7 +329,8 @@ public class TokenTypeExtensionsTests
 	[DataRow(":_aLongLabel", "_aLongLabel", DisplayName = "test ':_aLongLabel'")]
 	[DataRow(":_aLongerLabel", "_aLongerLabel", DisplayName = "test ':_aLongerLabel'")]
 	[DataRow(":_anEvenLongerLabel", "_anEvenLongerLabel", DisplayName = "test ':_anEvenLongerLabel'")]
-	[DataRow(":_theLongestLabelThatIsPossible00", "_theLongestLabelThatIsPossible00", DisplayName = "test ':_theLongestLabelThatIsPossible00'")]
+	[DataRow(":_theLongestLabelThatIsPossible00", "_theLongestLabelThatIsPossible00",
+		DisplayName = "test ':_theLongestLabelThatIsPossible00'")]
 	public void ValidateGetLabel(string text, string expected)
 	{
 		var sut = text.GetLabel();
@@ -341,16 +346,16 @@ public class TokenTypeExtensionsTests
 	[DataRow("    ", false, DisplayName = "test spaces")]
 	[DataRow(@"\t\t\t", false, DisplayName = "test tabs")]
 	[DataRow("; comment", false, DisplayName = "test comment")]
-	[DataRow("\"quoted string\"", false,  DisplayName = "test quoted string")]
-	[DataRow("'q'", false,  DisplayName = "test quoted character")]
-	[DataRow("word1", true,  DisplayName = "test 'word1'")]
-	[DataRow("thisCommandIsTooLong", true,  DisplayName = "test 'thisCommandIsTooLong'")]
-	[DataRow("word p1", true,  DisplayName = "test 'word p1'")]
-	[DataRow("word p1 p2", true,  DisplayName = "test 'word p1 p2'")]
-	[DataRow("word p1 p2,p3", true,  DisplayName = "test 'word p1 p2,p3'")]
-	[DataRow("word p1\t;comment", true,  DisplayName = "test 'word p1\t;comment'")]
-	[DataRow("word p1 p2; comment", true,  DisplayName = "test 'word p1 p2; comment'")]
-	[DataRow("word p1 p2,p3 ;\tcomment", true,  DisplayName = "test 'word p1 p2,p3 ;\tcomment'")]
+	[DataRow("\"quoted string\"", false, DisplayName = "test quoted string")]
+	[DataRow("'q'", false, DisplayName = "test quoted character")]
+	[DataRow("word1", true, DisplayName = "test 'word1'")]
+	[DataRow("thisCommandIsTooLong", true, DisplayName = "test 'thisCommandIsTooLong'")]
+	[DataRow("word p1", true, DisplayName = "test 'word p1'")]
+	[DataRow("word p1 p2", true, DisplayName = "test 'word p1 p2'")]
+	[DataRow("word p1 p2,p3", true, DisplayName = "test 'word p1 p2,p3'")]
+	[DataRow("word p1\t;comment", true, DisplayName = "test 'word p1\t;comment'")]
+	[DataRow("word p1 p2; comment", true, DisplayName = "test 'word p1 p2; comment'")]
+	[DataRow("word p1 p2,p3 ;\tcomment", true, DisplayName = "test 'word p1 p2,p3 ;\tcomment'")]
 	public void ValidateHasGeneric(string text, bool expected)
 	{
 		var sut = text.HasGeneric();
@@ -358,20 +363,21 @@ public class TokenTypeExtensionsTests
 	}
 
 	[TestMethod]
-	[DataRow("", "", "", "", DisplayName = "test empty")]
-	[DataRow("    ", "", "", "", DisplayName = "test spaces")]
-	[DataRow(@"\t\t\t", "", "", "", DisplayName = "test tabs")]
-	[DataRow("; comment", "", "", "", DisplayName = "test comment")]
-	[DataRow("\"quoted string\"", "", "", "",  DisplayName = "test quoted string")]
-	[DataRow("'q'", "", "", "",  DisplayName = "test quoted character")]
-	[DataRow("word1", "word1", "", "",  DisplayName = "test 'word1'")]
-	[DataRow("thisCommandIsTooLong", "thisCommandIsTooLong", "", "",  DisplayName = "test 'thisCommandIsTooLong'")]
-	[DataRow("word p1", "word", "p1", "",  DisplayName = "test 'word p1'")]
-	[DataRow("word p1 p2", "word", "p1 p2", "",  DisplayName = "test 'word p1 p2'")]
-	[DataRow("word p1 p2,p3", "word", "p1 p2,p3", "",  DisplayName = "test 'word p1 p2,p3'")]
-	[DataRow("word p1\t;comment", "word", "p1", "comment",  DisplayName = "test 'word p1\t;comment'")]
-	[DataRow("word p1 p2; comment", "word", "p1 p2", "comment",  DisplayName = "test 'word p1 p2; comment'")]
-	[DataRow("word p1 p2,p3 ;\tcomment", "word", "p1 p2,p3", "comment",  DisplayName = "test 'word p1 p2,p3 ;\tcomment'")]
+	[DataRow("", null, null, null, DisplayName = "test empty")]
+	[DataRow("    ", null, null, null, DisplayName = "test spaces")]
+	[DataRow(@"\t\t\t", null, null, null, DisplayName = "test tabs")]
+	[DataRow("; comment", null, null, null, DisplayName = "test comment")]
+	[DataRow("\"quoted string\"", null, null, null, DisplayName = "test quoted string")]
+	[DataRow("'q'", null, null, null, DisplayName = "test quoted character")]
+	[DataRow("word1", "word1", null, null, DisplayName = "test 'word1'")]
+	[DataRow("word1\t;comment", "word1", null, "comment", DisplayName = "test 'word1\t;comment'")]
+	[DataRow("thisCommandIsTooLong", "thisCommandIsTooLong", null, null, DisplayName = "test 'thisCommandIsTooLong'")]
+	[DataRow("word p1", "word", "p1", null, DisplayName = "test 'word p1'")]
+	[DataRow("word p1 p2", "word", "p1 p2", null, DisplayName = "test 'word p1 p2'")]
+	[DataRow("word p1 p2,p3", "word", "p1 p2,p3", null, DisplayName = "test 'word p1 p2,p3'")]
+	[DataRow("word p1\t;comment", "word", "p1", "comment", DisplayName = "test 'word p1\t;comment'")]
+	[DataRow("word p1 p2; comment", "word", "p1 p2", "comment", DisplayName = "test 'word p1 p2; comment'")]
+	[DataRow("word p1 p2,p3 ;\tcomment", "word", "p1 p2,p3", "comment", DisplayName = "test 'word p1 p2,p3 ;\tcomment'")]
 	public void ValidateGetGeneric(string text, string expectedWord, string expectedParameters, string expectedComment)
 	{
 		var (word, parameters, comment) = text.GetGeneric();

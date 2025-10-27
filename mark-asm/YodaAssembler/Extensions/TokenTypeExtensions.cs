@@ -4,6 +4,11 @@ namespace YodaAssembler.Extensions;
 
 public static partial class TokenTypeExtensions
 {
+	static TokenTypeExtensions()
+	{
+		DirectivesMapLock = new object();
+	}
+
 	#region Private classes etc.
 
 	#region Comments
@@ -40,6 +45,16 @@ public static partial class TokenTypeExtensions
 	/// <remarks>Additions to the array should be in lowercase</remarks>
 	private static readonly string[] Exclusions = ["none", "unknown"];
 
+	/// <summary>
+	/// Holds a map of already calculated Regex values for the given type
+	/// </summary>
+	private static Dictionary<Type, Regex> _directivesMap = new Dictionary<Type, Regex>();
+
+	/// <summary>
+	/// Lock object for protecting the directives map in multi-threaded execution
+	/// </summary>
+	private static readonly object DirectivesMapLock;
+
 	#endregion
 
 	#region Labels
@@ -65,7 +80,7 @@ public static partial class TokenTypeExtensions
 	/// <li>Group[4] => any inline comment in the text</li>
 	/// </ul>
 	/// </remarks>
-	[GeneratedRegex(@"^\s*(\w*)\b(.*?)(;(.*))?$", RegexOptions.Compiled)]
+	[GeneratedRegex(@"^\s*(\w*)\b(.*?)\s*(;\s*(.*))?$", RegexOptions.Compiled)]
 	private static partial Regex GenericWordRegex();
 
 	#endregion
@@ -131,17 +146,30 @@ public static partial class TokenTypeExtensions
 	private static Regex GetValidDirectivesRegex<T>()
 		where T : struct, Enum
 	{
-		//	Extract all names from the enum, except ones that are like 'none' or 'unknown'
-		var enumNames = Enum.GetNames<T>()
-			.Select(x => x.ToLowerInvariant())
-			.Where(q => !Exclusions.Contains(q))
-			.ToArray();
-		//	Assemble a regex:
-		//		Use the enum values that weren't excluded
-		//		Allow an optional supplemental parameter for the directive
-		//		Allow an optional inline comment after all directive parts
-		return new Regex(@"^\s*\[(" + string.Join('|', enumNames) + @")\]\s*(\w+)?\s*(;.*)?$",
-			RegexOptions.Compiled | RegexOptions.IgnoreCase);
+		Regex result = null!;
+		if (!_directivesMap.TryGetValue(typeof(T), out result!))
+		{
+			//	Extract all names from the enum, except ones that are like 'none' or 'unknown'
+			var enumNames = Enum.GetNames<T>()
+				.Select(x => x.ToLowerInvariant())
+				.Where(q => !Exclusions.Contains(q))
+				.ToArray();
+			//	Assemble a regex:
+			//		Use the enum values that weren't excluded
+			//		Allow an optional supplemental parameter for the directive
+			//		Allow an optional inline comment after all directive parts
+			result = new Regex(
+				@"^\s*\[(" + string.Join('|', enumNames) + @")\]\s*(\w+)?\s*(;\s*(.*))?$",
+				RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+			//	Lock the sync object to make sure only one thread is writing to the dictionary at a time
+			lock (DirectivesMapLock)
+			{
+				_directivesMap.TryAdd(typeof(T), result);
+			}
+		}
+
+		return result;
 	}
 
 	/// <summary>
@@ -176,14 +204,22 @@ public static partial class TokenTypeExtensions
 	/// </summary>
 	/// <param name="text">The text to be checked</param>
 	/// <typeparam name="T">The enum type to specify directive names</typeparam>
-	/// <returns>The matching directive name and any parameter supplied with it</returns>
-	public static (string name, string parameter) GetDirectiveNameAndParameter<T>(this string text)
+	/// <returns>The matching directive name and any parameter and comments supplied with it</returns>
+	/// <remarks>Any missing elements shall be represented by <c>null</c></remarks>
+	public static (string name, string parameter, string comment) GetDirectiveParts<T>(this string text)
 		where T : struct, Enum
 	{
 		var m = GetValidDirectivesRegex<T>().Match(text);
-		return m.Success
-			? (m.Groups[1].Value, m.Groups[2].Value)
-			: (string.Empty, string.Empty);
+		var name = m.Success
+			? m.Groups[1].Value
+			: null!;
+		var parameter = m.Success && m.Groups[2].Success
+			? m.Groups[2].Value
+			: null!;
+		var comment = m.Success && m.Groups[4].Success
+			? m.Groups[4].Value
+			: null!;
+		return (name, parameter, comment);
 	}
 
 	/// <summary>
@@ -204,20 +240,20 @@ public static partial class TokenTypeExtensions
 	}
 
 	/// <summary>
-	/// Extracts the directive value and parameter details from <paramref name="text"/>
+	/// Extracts the directive value parameter and/or comment details from <paramref name="text"/>
 	/// </summary>
 	/// <param name="text">The text to be checked</param>
 	/// <typeparam name="T">The enum type to specify directive names</typeparam>
-	/// <returns>A <see cref="Tuple{T1,T2}"/> of the enum value associated with the directive and any parameter</returns>
-	public static (T directive, string parameter) GetDirectiveAndParameter<T>(this string text)
+	/// <returns>A <see cref="Tuple{T1,T2,T3}"/> of the enum value associated with the directive, any parameter and comment</returns>
+	public static (T directive, string parameter, string comment) GetDirectiveDetail<T>(this string text)
 		where T : struct, Enum
 	{
-		var (name, parameter) = GetDirectiveNameAndParameter<T>(text);
+		var (name, parameter, comment) = GetDirectiveParts<T>(text);
 		return string.IsNullOrWhiteSpace(name)
-			? (default, string.Empty)
+			? (default, null!, null!)
 			: Enum.TryParse<T>(name, true, out var result)
-				? (result, parameter)
-				: (default, string.Empty);
+				? (result, parameter, comment)
+				: (default, null!, null!);
 	}
 
 	#endregion
@@ -283,9 +319,16 @@ public static partial class TokenTypeExtensions
 		//	Check if there is a match found
 		var m = GenericWordRegex().Match(text);
 
-		return m.Success
-			? (m.Groups[1].Value, m.Groups[2].Value.Trim(), m.Groups[4].Value.Trim())
-			: (string.Empty, string.Empty, string.Empty);
+		var word = m.Success
+			? m.Groups[1].Value
+			: null!;
+		var parameters = m.Success && m.Groups[2].Success && !string.IsNullOrWhiteSpace(m.Groups[2].Value)
+			? m.Groups[2].Value.Trim()
+			: null!;
+		var comment = m.Success && m.Groups[4].Success && !string.IsNullOrWhiteSpace(m.Groups[4].Value)
+			? m.Groups[4].Value.Trim()
+			: null!;
+		return (word, parameters, comment);
 	}
 
 	#endregion
