@@ -40,7 +40,9 @@ public record YodaToken
 		TokenType = tokenType;
 		LineNumber = lineNumber;
 		LineSequence = lineSequence;
-		Text = text?.Trim();
+		Text = tokenType is TokenType.LiteralChar or TokenType.LiteralString
+			? Regex.Unescape(text?.Trim() ?? "")
+			: text?.Trim();
 		ParameterType = parameterType;
 	}
 
