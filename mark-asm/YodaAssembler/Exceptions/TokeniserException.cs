@@ -1,5 +1,6 @@
 using System.Text;
 using YodaAssembler.Enums;
+using YodaAssembler.Records;
 
 namespace YodaAssembler.Exceptions;
 
@@ -38,6 +39,21 @@ public class TokeniserException
 	{
 		LineNumber = lineNumber;
 		SourceText = sourceText;
+	}
+
+	public TokeniserException(SourceLine line)
+		: base(MakeMessage(null, line.LineNumber, line.Text))
+	{
+	}
+
+	public TokeniserException(SourceLine line, string? message)
+		: base(MakeMessage(message, line.LineNumber, line.Text))
+	{
+	}
+
+	public TokeniserException(SourceLine line, string? message, Exception? innerException)
+		: base(MakeMessage(message, line.LineNumber, line.Text),  innerException)
+	{
 	}
 
 	/// <summary>
