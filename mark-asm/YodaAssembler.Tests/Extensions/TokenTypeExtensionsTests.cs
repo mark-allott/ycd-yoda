@@ -94,6 +94,32 @@ public class TokenTypeExtensionsTests
 
 	#region Directive handling
 
+	private enum BadDirectiveTest1
+	{
+		Unknown = 0,
+		Good,
+		AReallyLongNameThatShouldFail
+	}
+
+	private enum BadDirectiveTest2
+	{
+		Unknown = 0,
+		Good,
+		_Bad
+	}
+
+	[TestMethod]
+	public void ValidateMaxDirectiveNameLength()
+	{
+		Assert.ThrowsException<ArgumentOutOfRangeException>(() => "test".IsDirective<BadDirectiveTest1>());
+	}
+
+	[TestMethod]
+	public void ValidateDirectiveCannotStartWithUnderscore()
+	{
+		Assert.ThrowsException<ArgumentOutOfRangeException>(() => "test".IsDirective<BadDirectiveTest2>());
+	}
+
 	[TestMethod]
 	[DataRow("[program]", true, DisplayName = "test [program]")]
 	[DataRow(null, false, DisplayName = "test null")]
@@ -111,6 +137,8 @@ public class TokenTypeExtensionsTests
 	[DataRow("[a] param ; comment", true, DisplayName = "test [a] param ; comment")]
 	[DataRow("[a] param\t;comment", true, DisplayName = "test [a] param\t;comment")]
 	[DataRow("[a] param\t;\tcomment", true, DisplayName = "test [a] param\t;\tcomment")]
+	[DataRow("[a] param\t; multiword comment", true, DisplayName = "test [a] param\t; multiword comment")]
+	[DataRow("[a] param\t;\tcomment\t", true, DisplayName = "test [a] param\t;\tcomment\t")]
 	public void ValidateHasDirective(string text, bool expected)
 	{
 		var sut = text.HasDirective();
@@ -180,8 +208,7 @@ public class TokenTypeExtensionsTests
 	[DataRow("[DATA] 0xC0\t;\tcomment", "DATA", "0xC0", "comment", DisplayName = "test [DATA] 0xC0\t;\tcomment")]
 	[DataRow("[constants]", "constants", null, null, DisplayName = "test [constants]")]
 	[DataRow("[Constants] abc", "Constants", "abc", null, DisplayName = "test [Constants] abc")]
-	[DataRow("[CONSTANTS] def\t;\tcomment", "CONSTANTS", "def", "comment",
-		DisplayName = "test [CONSTANTS] def\t;\tcomment")]
+	[DataRow("[CONSTANTS] def\t;\tcomment", "CONSTANTS", "def", "comment", DisplayName = "test [CONSTANTS] def\t;\tcomment")]
 	[DataRow("[prog]", "prog", null, null, DisplayName = "test [prog]")]
 	[DataRow("[Prog] 0b0000", "Prog", "0b0000", null, DisplayName = "test [Prog] 0b0000")]
 	[DataRow("[PROG] ;another comment", "PROG", null, "another comment", DisplayName = "test [PROG] ;another comment")]
@@ -258,6 +285,8 @@ public class TokenTypeExtensionsTests
 	[DataRow("[dummy]", DirectiveType.Unknown, null, null, DisplayName = "test [dummy]")]
 	[DataRow("[dummy]\t;comment", DirectiveType.Unknown, null, null, DisplayName = "test [dummy]\t;comment")]
 	[DataRow("[dummy] 0", DirectiveType.Unknown, null, null, DisplayName = "test [dummy] 0")]
+	[DataRow("[dummy]\t;\tcomment    ", DirectiveType.Unknown, null, null, DisplayName = "test [dummy]\t;\tcomment with additional terminating spaces")]
+	[DataRow("[dummy]\t;   comment\t\t", DirectiveType.Unknown, null, null, DisplayName = "test [dummy]\t; comment with additional terminating tabs")]
 	public void ValidateGetDirectiveDetail(string text, DirectiveType expectedDirective, string expectedParam, string expectedComment)
 	{
 		var (directive, parameter, comment) = text.GetDirectiveDetail<DirectiveType>();
@@ -306,13 +335,13 @@ public class TokenTypeExtensionsTests
 	}
 
 	[TestMethod]
-	[DataRow("", "", DisplayName = "test empty")]
-	[DataRow("dummy", "", DisplayName = "test 'dummy'")]
-	[DataRow(":", "", DisplayName = "test colon with no symbols")]
-	[DataRow("a:", "", DisplayName = "test colon with a prefix")]
-	[DataRow(":0", "", DisplayName = "test ':0'")]
-	[DataRow(": a", "", DisplayName = "test ': a'")]
-	[DataRow(":_theShortestLabelThatWillFailTest", "", DisplayName = "test ':_theShortestLabelThatWillFailTest'")]
+	[DataRow("", null, DisplayName = "test empty")]
+	[DataRow("dummy", null, DisplayName = "test 'dummy'")]
+	[DataRow(":", null, DisplayName = "test colon with no symbols")]
+	[DataRow("a:", null, DisplayName = "test colon with a prefix")]
+	[DataRow(":0", null, DisplayName = "test ':0'")]
+	[DataRow(": a", null, DisplayName = "test ': a'")]
+	[DataRow(":_theShortestLabelThatWillFailTest", null, DisplayName = "test ':_theShortestLabelThatWillFailTest'")]
 	[DataRow(":__", "__", DisplayName = "test ':__'")]
 	[DataRow(":_a_", "_a_", DisplayName = "test ':_a_'")]
 	[DataRow(":a", "a", DisplayName = "test ':a'")]
@@ -326,19 +355,19 @@ public class TokenTypeExtensionsTests
 	[DataRow(" :a ", "a", DisplayName = "test ' :a '")]
 	[DataRow("\t:a ", "a", DisplayName = "test '\t:a '")]
 	[DataRow("\t:a\t", "a", DisplayName = "test '\t:a\t'")]
-	[DataRow(":a ;comment", "a", DisplayName = "test ':a ;comment'")]
-	[DataRow(" :a ;comment", "a", DisplayName = "test ' :a ;comment'")]
-	[DataRow("\t:a ;comment", "a", DisplayName = "test '\t:a ;comment'")]
-	[DataRow("\t:a\t;comment", "a", DisplayName = "test '\t:a\t;comment'")]
+	[DataRow(":a ;comment", "a", "comment", DisplayName = "test ':a ;comment'")]
+	[DataRow(" :a ;comment", "a", "comment", DisplayName = "test ' :a ;comment'")]
+	[DataRow("\t:a ;comment", "a", "comment", DisplayName = "test '\t:a ;comment'")]
+	[DataRow("\t:a\t;comment", "a", "comment", DisplayName = "test '\t:a\t;comment'")]
 	[DataRow(":_aLongLabel", "_aLongLabel", DisplayName = "test ':_aLongLabel'")]
 	[DataRow(":_aLongerLabel", "_aLongerLabel", DisplayName = "test ':_aLongerLabel'")]
 	[DataRow(":_anEvenLongerLabel", "_anEvenLongerLabel", DisplayName = "test ':_anEvenLongerLabel'")]
-	[DataRow(":_theLongestLabelThatIsPossible00", "_theLongestLabelThatIsPossible00",
-		DisplayName = "test ':_theLongestLabelThatIsPossible00'")]
-	public void ValidateGetLabel(string text, string expected)
+	[DataRow(":_theLongestLabelThatIsPossible00", "_theLongestLabelThatIsPossible00", DisplayName = "test ':_theLongestLabelThatIsPossible00'")]
+	public void ValidateGetLabelDetail(string text, string expectedLabel, string? expectedComment = null)
 	{
-		var sut = text.GetLabel();
-		sut.Should().Be(expected);
+		var (label, comment) = text.GetLabelDetail();
+		label.Should().Be(expectedLabel);
+		comment.Should().Be(expectedComment);
 	}
 
 	#endregion
@@ -384,9 +413,9 @@ public class TokenTypeExtensionsTests
 	[DataRow("word p1 p2; comment", "word", "p1 p2", "comment", DisplayName = "test 'word p1 p2; comment'")]
 	[DataRow("word p1 p2,p3 ;\tcomment", "word", "p1 p2,p3", "comment", DisplayName = "test 'word p1 p2,p3 ;\tcomment'")]
 	[DataRow("word = 0x00 ;\tcomment", "word", "= 0x00", "comment", DisplayName = "test 'word = 0x00 ;\tcomment'")]
-	public void ValidateGetGeneric(string text, string expectedWord, string expectedParameters, string expectedComment)
+	public void ValidateGetGenericDetail(string text, string expectedWord, string expectedParameters, string expectedComment)
 	{
-		var (word, parameters, comment) = text.GetGeneric();
+		var (word, parameters, comment) = text.GetGenericDetail();
 		word.Should().Be(expectedWord);
 		parameters.Should().Be(expectedParameters);
 		comment.Should().Be(expectedComment);

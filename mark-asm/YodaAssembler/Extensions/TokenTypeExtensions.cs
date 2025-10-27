@@ -9,35 +9,7 @@ public static partial class TokenTypeExtensions
 		DirectivesMapLock = new object();
 	}
 
-	#region Private classes etc.
-
-	#region Comments
-
-	/// <summary>
-	/// Detects a full-line comment from the supplied text
-	/// </summary>
-	/// <returns></returns>
-	/// <remarks>Detection is not concerned with any whitespace after the semicolon, just that the semicolon exists and there is optional content after it</remarks>
-	[GeneratedRegex(@"^\s*;(.*)$", RegexOptions.Compiled)]
-	private static partial Regex IsCommentRegex();
-
-	/// <summary>
-	/// Detects whether a comment is within the supplied text
-	/// </summary>
-	/// <returns></returns>
-	[GeneratedRegex(@";\s*(.*)$", RegexOptions.Compiled)]
-	private static partial Regex HasCommentRegex();
-
-	#endregion
-
-	#region Directives
-
-	/// <summary>
-	/// Extracts a directive from the supplied text
-	/// </summary>
-	/// <returns></returns>
-	[GeneratedRegex(@"^\s*\[(\w+)\](\s+\w+)?\s*(;.*)?$", RegexOptions.Compiled)]
-	private static partial Regex HasDirectiveRegex();
+	#region Directives Handling
 
 	/// <summary>
 	/// Defines enum names that are to be excluded from matches
@@ -57,34 +29,6 @@ public static partial class TokenTypeExtensions
 
 	#endregion
 
-	#region Labels
-
-	/// <summary>
-	/// Extracts a label from the supplied text
-	/// </summary>
-	/// <returns></returns>
-	[GeneratedRegex(@"^\s*:([A-Za-z_]\w{0,31})\s*(;.*)?$", RegexOptions.Compiled)]
-	private static partial Regex HasLabelRegex();
-
-	#endregion
-
-	/// <summary>
-	/// Extracts a generic single-word, minus any preceding whitespace, followed by any optional parameters and/or comment
-	/// </summary>
-	/// <returns></returns>
-	/// <remarks>
-	/// <ul>
-	/// <li>Group[0] => all possible matched elements</li>
-	/// <li>Group[1] => the word / command text</li>
-	/// <li>Group[2] => any text between the end of the first word and any comment</li>
-	/// <li>Group[4] => any inline comment in the text</li>
-	/// </ul>
-	/// </remarks>
-	[GeneratedRegex(@"^\s*(\w*)\b(.*?)\s*(;\s*(.*))?$", RegexOptions.Compiled)]
-	private static partial Regex GenericWordRegex();
-
-	#endregion
-
 	#region Comment handling
 
 	/// <summary>
@@ -95,7 +39,7 @@ public static partial class TokenTypeExtensions
 	public static bool IsComment(this string text)
 	{
 		return !string.IsNullOrWhiteSpace(text) &&
-		       IsCommentRegex().Match(text.Trim()).Success;
+		       TokenRegex.IsComment().Match(text.Trim()).Success;
 	}
 
 	/// <summary>
@@ -106,7 +50,7 @@ public static partial class TokenTypeExtensions
 	public static bool HasComment(this string text)
 	{
 		return !string.IsNullOrWhiteSpace(text) &&
-		       HasCommentRegex().Match(text.Trim()).Success;
+		       TokenRegex.HasComment().Match(text).Success;
 	}
 
 	/// <summary>
@@ -116,7 +60,7 @@ public static partial class TokenTypeExtensions
 	/// <returns>The text of the comment (if found), or <c>string.Empty</c></returns>
 	public static string GetComment(this string text)
 	{
-		var m = HasCommentRegex().Match(text.Trim());
+		var m = TokenRegex.HasComment().Match(text.Trim());
 		return m.Success
 			? m.Groups[1].Value
 			: string.Empty;
@@ -135,7 +79,7 @@ public static partial class TokenTypeExtensions
 	public static bool HasDirective(this string text)
 	{
 		return !string.IsNullOrWhiteSpace(text) &&
-		       HasDirectiveRegex().Match(text).Success;
+		       TokenRegex.IsDirective().Match(text).Success;
 	}
 
 	/// <summary>
@@ -146,27 +90,39 @@ public static partial class TokenTypeExtensions
 	private static Regex GetValidDirectivesRegex<T>()
 		where T : struct, Enum
 	{
+		//	If already known, return what we have
 		Regex result = null!;
-		if (!_directivesMap.TryGetValue(typeof(T), out result!))
-		{
-			//	Extract all names from the enum, except ones that are like 'none' or 'unknown'
-			var enumNames = Enum.GetNames<T>()
-				.Select(x => x.ToLowerInvariant())
-				.Where(q => !Exclusions.Contains(q))
-				.ToArray();
-			//	Assemble a regex:
-			//		Use the enum values that weren't excluded
-			//		Allow an optional supplemental parameter for the directive
-			//		Allow an optional inline comment after all directive parts
-			result = new Regex(
-				@"^\s*\[(" + string.Join('|', enumNames) + @")\]\s*(\w+)?\s*(;\s*(.*))?$",
-				RegexOptions.Compiled | RegexOptions.IgnoreCase);
+		if (_directivesMap.TryGetValue(typeof(T), out result!))
+			return result;
 
-			//	Lock the sync object to make sure only one thread is writing to the dictionary at a time
-			lock (DirectivesMapLock)
-			{
-				_directivesMap.TryAdd(typeof(T), result);
-			}
+		//	Extract all names from the enum, except ones that are like 'none' or 'unknown'
+		var enumNames = Enum.GetNames<T>()
+			.Select(x => x.ToLowerInvariant())
+			.Where(q => !Exclusions.Contains(q))
+			.Distinct()
+			.ToArray();
+
+		//	Names must all be 20 characters or fewer
+		if (enumNames.Any(n => n.Length > 20))
+			throw new ArgumentOutOfRangeException(nameof(T), $"An element of {nameof(T)} exceeds 20 characters.");
+
+		//	Names MUST adhere to the required constraints
+		if (!enumNames.All(n => TokenRegex.IsDirective().IsMatch($"[{n}]")))
+			throw new ArgumentOutOfRangeException(nameof(T),
+				$"An element of {nameof(T)} does not match naming constraints.");
+
+		//	Assemble a regex:
+		//		Use the enum values that weren't excluded
+		//		Allow an optional supplemental parameter for the directive
+		//		Allow an optional inline comment after all directive parts
+		result = new Regex(@"^\s*\[(" + string.Join('|', enumNames) +
+		                   @")\]\s*(\w+)?\s*(;\s*(.*)\s*)?$",
+			RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ECMAScript);
+
+		//	Lock the sync object to make sure only one thread is writing to the dictionary at a time
+		lock (DirectivesMapLock)
+		{
+			_directivesMap.TryAdd(typeof(T), result);
 		}
 
 		return result;
@@ -278,7 +234,7 @@ public static partial class TokenTypeExtensions
 	public static bool HasLabel(this string text)
 	{
 		return !string.IsNullOrWhiteSpace(text) &&
-		       HasLabelRegex().Match(text).Success;
+		       TokenRegex.HasLabel().Match(text).Success;
 	}
 
 	/// <summary>
@@ -286,12 +242,17 @@ public static partial class TokenTypeExtensions
 	/// </summary>
 	/// <param name="text">The text to be checked</param>
 	/// <returns>The name of the label, if present, or <c>string.Empty</c></returns>
-	public static string GetLabel(this string text)
+	public static (string? label, string? comment) GetLabelDetail(this string text)
 	{
-		var m = HasLabelRegex().Match(text);
-		return m.Success
+		var m = TokenRegex.HasLabel().Match(text);
+
+		var label = m.Success
 			? m.Groups[1].Value
-			: string.Empty;
+			: null;
+		var comment = m.Success && m.Groups[3].Success
+			? m.Groups[3].Value
+			: null;
+		return (label, comment);
 	}
 
 	#endregion
@@ -306,7 +267,7 @@ public static partial class TokenTypeExtensions
 	public static bool HasGeneric(this string text)
 	{
 		return !string.IsNullOrWhiteSpace(text) &&
-		       GenericWordRegex().Match(text).Success;
+		       TokenRegex.GenericWord().Match(text).Success;
 	}
 
 	/// <summary>
@@ -314,20 +275,20 @@ public static partial class TokenTypeExtensions
 	/// </summary>
 	/// <param name="text">The text to be checked</param>
 	/// <returns>A <see cref="Tuple{T1,T2,T3}"/> containing the generic word / command, any optional parameters associated with it and any optional comment</returns>
-	public static (string word, string parameters, string comment) GetGeneric(this string text)
+	public static (string word, string? parameters, string? comment) GetGenericDetail(this string text)
 	{
 		//	Check if there is a match found
-		var m = GenericWordRegex().Match(text);
+		var m = TokenRegex.GenericWord().Match(text);
 
 		var word = m.Success
 			? m.Groups[1].Value
 			: null!;
 		var parameters = m.Success && m.Groups[2].Success && !string.IsNullOrWhiteSpace(m.Groups[2].Value)
 			? m.Groups[2].Value.Trim()
-			: null!;
+			: null;
 		var comment = m.Success && m.Groups[4].Success && !string.IsNullOrWhiteSpace(m.Groups[4].Value)
 			? m.Groups[4].Value.Trim()
-			: null!;
+			: null;
 		return (word, parameters, comment);
 	}
 
