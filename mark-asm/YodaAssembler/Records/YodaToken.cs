@@ -185,7 +185,7 @@ public record YodaToken
 	/// <param name="text">The text representing the literal value</param>
 	/// <returns>The tokenised version of the <see cref="TokenType.LiteralString"/></returns>
 	public static YodaToken LiteralString(int lineNumber, int lineSequence, string text) =>
-		Create(TokenType.LiteralString, lineNumber, lineSequence, text);
+		Create(TokenType.LiteralString, lineNumber, lineSequence, text, ParameterTypes.LiteralString);
 
 	/// <summary>
 	/// Static constructor to create a "literal" token from the source to represent a character
@@ -195,7 +195,7 @@ public record YodaToken
 	/// <param name="text">The text representing the literal value</param>
 	/// <returns>The tokenised version of the <see cref="TokenType.LiteralChar"/></returns>
 	public static YodaToken LiteralChar(int lineNumber, int lineSequence, string text) =>
-		Create(TokenType.LiteralChar, lineNumber, lineSequence, text);
+		Create(TokenType.LiteralChar, lineNumber, lineSequence, text, ParameterTypes.LiteralChar);
 
 	/// <summary>
 	/// Static constructor to create a "literal" token from the source to represent a number value
@@ -215,7 +215,7 @@ public record YodaToken
 	/// <param name="text">The text representing the symbol value</param>
 	/// <returns>The tokenised version of the <see cref="TokenType.Symbol"/></returns>
 	public static YodaToken Symbol(int lineNumber, int lineSequence, string text) =>
-		Create(TokenType.Symbol, lineNumber, lineSequence, text);
+		Create(TokenType.Symbol, lineNumber, lineSequence, text, ParameterTypes.Symbol);
 
 	/// <summary>
 	/// Static constructor to create a "direct number" token from the source
@@ -235,7 +235,7 @@ public record YodaToken
 	/// <param name="text">The text representing the number for the direct symbol</param>
 	/// <returns>The tokenised version of the <see cref="TokenType.DirectSymbol"/></returns>
 	public static YodaToken DirectSymbol(int lineNumber, int lineSequence, string text) =>
-		Create(TokenType.DirectSymbol, lineNumber, lineSequence, text);
+		Create(TokenType.DirectSymbol, lineNumber, lineSequence, text, ParameterTypes.DirectSymbol);
 
 	/// <summary>
 	/// Static constructor to create an "indirect number" token from the source
@@ -255,7 +255,7 @@ public record YodaToken
 	/// <param name="text">The text representing the number for the indirect symbol</param>
 	/// <returns>The tokenised version of the <see cref="TokenType.IndirectSymbol"/></returns>
 	public static YodaToken IndirectSymbol(int lineNumber, int lineSequence, string text) =>
-		Create(TokenType.IndirectSymbol, lineNumber, lineSequence, text);
+		Create(TokenType.IndirectSymbol, lineNumber, lineSequence, text, ParameterTypes.IndirectSymbol);
 
 	#endregion
 

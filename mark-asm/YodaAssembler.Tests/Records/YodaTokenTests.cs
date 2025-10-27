@@ -33,6 +33,7 @@ public class YodaTokenTests
 		}
 
 		var sut = YodaToken.Blank(lineNumber, lineSequence);
+		sut.Should().NotBeNull();
 		sut.LineNumber.Should().Be(lineNumber);
 		sut.LineSequence.Should().Be(lineSequence);
 	}
@@ -41,11 +42,13 @@ public class YodaTokenTests
 	public void ValidateBlankToken()
 	{
 		YodaToken sut = YodaToken.Blank(0, 0);
+		sut.Should().NotBeNull();
 		sut.TokenType.Should().Be(TokenType.Blank);
 		sut.LineNumber.Should().Be(0);
 		sut.LineSequence.Should().Be(0);
 		sut.Text.Should().BeNull();
 		sut.ToString().Should().BeEmpty();
+		sut.ParameterType.Should().Be(ParameterTypes.None);
 	}
 
 	[TestMethod]
@@ -67,12 +70,14 @@ public class YodaTokenTests
 	public void ValidateCommentToken(string comment, string expectedText, string expectedString)
 	{
 		YodaToken sut = YodaToken.Comment(0, 0, comment);
+		sut.Should().NotBeNull();
 		sut.TokenType.Should().Be(TokenType.Comment);
 		sut.LineNumber.Should().Be(0);
 		sut.LineSequence.Should().Be(0);
 		sut.LineNumber.Should().Be(0);
 		sut.Text.Should().Be(expectedText);
 		sut.ToString().Should().Be(expectedString);
+		sut.ParameterType.Should().Be(ParameterTypes.None);
 	}
 
 	[TestMethod]
@@ -131,11 +136,13 @@ public class YodaTokenTests
 		expectedDirective.Should().NotBeNull();
 
 		YodaToken sut = YodaToken.Directive(0, 0, text!);
+		sut.Should().NotBeNull();
 		sut.LineNumber.Should().Be(0);
 		sut.LineSequence.Should().Be(0);
 		sut.Text.Should().Be(expectedDirective);
 		sut.TokenType.Should().Be(TokenType.Directive);
 		sut.ToString().Should().Be($"[{expectedDirective}]");
+		sut.ParameterType.Should().Be(ParameterTypes.None);
 	}
 
 	private static readonly string[] IndentStrings = ["", " ", "\t"];
@@ -201,11 +208,13 @@ public class YodaTokenTests
 	public void ValidateLabelToken(string text, string expectedLabel)
 	{
 		YodaToken sut = YodaToken.Label(0, 0, text);
+		sut.Should().NotBeNull();
 		sut.LineNumber.Should().Be(0);
 		sut.LineSequence.Should().Be(0);
 		sut.Text.Should().Be(expectedLabel);
 		sut.TokenType.Should().Be(TokenType.Label);
 		sut.ToString().Should().Be($":{expectedLabel}");
+		sut.ParameterType.Should().Be(ParameterTypes.None);
 	}
 
 	/// <summary>
@@ -284,6 +293,7 @@ public class YodaTokenTests
 		sut.LineNumber.Should().Be(0);
 		sut.LineSequence.Should().Be(0);
 		sut.ToString().Should().Be(expected);
+		sut.ParameterType.Should().Be(tokenType == TokenType.Symbol ? ParameterTypes.Symbol : ParameterTypes.None);
 	}
 	
 	[TestMethod]
@@ -353,6 +363,7 @@ public class YodaTokenTests
 		sut.LineSequence.Should().Be(0);
 		sut.Text.Should().Be(expected);
 		sut.ToString().Should().Be($"\"{expected}\"");
+		sut.ParameterType.Should().Be(ParameterTypes.LiteralString);
 	}
 
 	[TestMethod]
@@ -380,6 +391,7 @@ public class YodaTokenTests
 		sut.LineSequence.Should().Be(0);
 		sut.Text.Should().Be(expected);
 		sut.ToString().Should().Be($"'{expected}'");
+		sut.ParameterType.Should().Be(ParameterTypes.LiteralChar);
 	}
 
 	internal static IEnumerable<object[]> LiteralNumberData()
@@ -455,6 +467,7 @@ public class YodaTokenTests
 		sut.Text.Should().Be(expectedText);
 		//	ToString should have prefixes present for hex/binary and have 2-digits for hex and 8-digits for binary; decimal shall be numeric only
 		sut.ToString().Should().Be($"{expectedToString}");
+		sut.ParameterType.Should().Be(ParameterTypes.LiteralNumber);
 	}
 
 	[TestMethod]
@@ -486,6 +499,7 @@ public class YodaTokenTests
 		sut.TokenType.Should().Be(TokenType.LiteralNumber);
 		sut.LineNumber.Should().Be(0);
 		sut.LineSequence.Should().Be(0);
+		sut.ParameterType.Should().Be(ParameterTypes.LiteralNumber);
 		sut.Should().BeAssignableTo<YodaNumericValueToken>();
 		YodaNumericValueToken? numericToken = sut as YodaNumericValueToken;
 		numericToken.Should().NotBeNull();
@@ -560,6 +574,7 @@ public class YodaTokenTests
 		sut.Text.Should().Be(value);
 		//	ToString should have prefixes present for hex/binary and have 2-digits for hex and 8-digits for binary; decimal shall be numeric only
 		sut.ToString().Should().Be($"[{expectedToString}]");
+		sut.ParameterType.Should().Be(ParameterTypes.DirectNumber);
 	}
 	
 	internal static IEnumerable<object[]> SymbolData()
@@ -615,6 +630,7 @@ public class YodaTokenTests
 		sut.Text.Should().Be(value);
 		//	ToString should be expressed in form [symbol] 
 		sut.ToString().Should().Be($"[{value}]");
+		sut.ParameterType.Should().Be(ParameterTypes.DirectSymbol);
 	}
 	
 	private static (string? data, string? value) GenerateIndirectTokenText(string? input, bool isSymbol = false)
@@ -664,6 +680,7 @@ public class YodaTokenTests
 		sut.Text.Should().Be(value);
 		//	ToString should have prefixes present for hex/binary and have 2-digits for hex and 8-digits for binary; decimal shall be numeric only
 		sut.ToString().Should().Be($"[[{expectedToString}]]");
+		sut.ParameterType.Should().Be(ParameterTypes.IndirectNumber);
 	}
 	
 	[TestMethod]
@@ -688,5 +705,6 @@ public class YodaTokenTests
 		sut.Text.Should().Be(value);
 		//	ToString should be expressed in form [[symbol]] 
 		sut.ToString().Should().Be($"[[{value}]]");
+		sut.ParameterType.Should().Be(ParameterTypes.IndirectSymbol);
 	}
 }
