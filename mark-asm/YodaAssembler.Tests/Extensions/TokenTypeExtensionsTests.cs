@@ -356,6 +356,7 @@ public class TokenTypeExtensionsTests
 	[DataRow("word p1\t;comment", true, DisplayName = "test 'word p1\t;comment'")]
 	[DataRow("word p1 p2; comment", true, DisplayName = "test 'word p1 p2; comment'")]
 	[DataRow("word p1 p2,p3 ;\tcomment", true, DisplayName = "test 'word p1 p2,p3 ;\tcomment'")]
+	[DataRow("word = 0x00 ;\tcomment", true, DisplayName = "test 'word = 0x00 ;\tcomment'")]
 	public void ValidateHasGeneric(string text, bool expected)
 	{
 		var sut = text.HasGeneric();
@@ -378,6 +379,7 @@ public class TokenTypeExtensionsTests
 	[DataRow("word p1\t;comment", "word", "p1", "comment", DisplayName = "test 'word p1\t;comment'")]
 	[DataRow("word p1 p2; comment", "word", "p1 p2", "comment", DisplayName = "test 'word p1 p2; comment'")]
 	[DataRow("word p1 p2,p3 ;\tcomment", "word", "p1 p2,p3", "comment", DisplayName = "test 'word p1 p2,p3 ;\tcomment'")]
+	[DataRow("word = 0x00 ;\tcomment", "word", "= 0x00", "comment", DisplayName = "test 'word = 0x00 ;\tcomment'")]
 	public void ValidateGetGeneric(string text, string expectedWord, string expectedParameters, string expectedComment)
 	{
 		var (word, parameters, comment) = text.GetGeneric();
