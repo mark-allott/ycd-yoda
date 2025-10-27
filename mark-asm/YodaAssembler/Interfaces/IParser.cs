@@ -1,5 +1,3 @@
-using YodaAssembler.Processor;
-
 namespace YodaAssembler.Interfaces;
 
 public interface IParser<out T>
