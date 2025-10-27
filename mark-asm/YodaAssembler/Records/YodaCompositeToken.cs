@@ -7,7 +7,10 @@ public record YodaCompositeToken
 {
 	protected YodaToken ChildToken { get; init; }
 
-	private YodaCompositeToken(TokenType tokenType, int lineNumber, int lineSequence, string? text, YodaToken childToken, ParameterTypes parameterType) 
+	public int? InnerNumericValue => GetInnerNumericValue();
+
+	private YodaCompositeToken(TokenType tokenType, int lineNumber, int lineSequence, string? text,
+		YodaToken childToken, ParameterTypes parameterType)
 		: base(tokenType, lineNumber, lineSequence, text, parameterType)
 	{
 		ChildToken = childToken;
@@ -16,7 +19,8 @@ public record YodaCompositeToken
 	public static YodaCompositeToken CreateDirectNumber(int lineNumber, int lineSequence, string? text,
 		YodaNumericValueToken childToken)
 	{
-		return new YodaCompositeToken(TokenType.DirectNumber, lineNumber, lineSequence, text, childToken, ParameterTypes.DirectNumber);
+		return new YodaCompositeToken(TokenType.DirectNumber, lineNumber, lineSequence, text, childToken,
+			ParameterTypes.DirectNumber);
 	}
 
 	public static YodaCompositeToken CreateIndirectNumber(int lineNumber, int lineSequence, string? text,
@@ -26,9 +30,18 @@ public record YodaCompositeToken
 		return new YodaCompositeToken(TokenType.IndirectNumber, lineNumber, lineSequence, text, directNumber,
 			ParameterTypes.IndirectNumber);
 	}
-	
+
 	public override string ToString()
 	{
 		return $"[{ChildToken}]";
+	}
+
+	private int? GetInnerNumericValue()
+	{
+		if (ChildToken is YodaCompositeToken childToken)
+			return childToken.InnerNumericValue;
+		if (ChildToken is YodaNumericValueToken numericToken)
+			return numericToken.NumericValue;
+		return null;
 	}
 }
