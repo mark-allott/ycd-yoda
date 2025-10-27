@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 
 namespace YodaAssembler.Exceptions;
 
@@ -33,11 +32,8 @@ public class YodaByteCodeException
 
 	private static string? MakeMessage(string? message, int lineNumber = -1)
 	{
-		if (lineNumber == -1)
-			return message;
-
-		var sb = new StringBuilder(message);
-		sb.Append($" on line {lineNumber}");
-		return sb.ToString().Trim();
+		return lineNumber == -1
+			? message
+			: $"{message} on line {lineNumber}".Trim();
 	}
 }
