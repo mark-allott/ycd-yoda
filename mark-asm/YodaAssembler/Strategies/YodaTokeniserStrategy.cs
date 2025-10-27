@@ -318,8 +318,8 @@ public partial class YodaTokeniserStrategy
 		//	Tokenise any parameters we have for the command - checking they are required / of correct type etc.
 		var paramTokens = TokeniseParameters(parameters ?? string.Empty, command, line);
 
-		//	Good so far, create a temp container for the various new tokens, adding the command
-		var cmdTokens = new List<YodaToken>([YodaToken.Command(line.LineNumber, 0, word)]);
+		//	Good so far, create a temp container for the various new tokens, adding the YodaCommandToken and matched YodaCommand
+		var cmdTokens = new List<YodaToken>([YodaCommandToken.Create(line.LineNumber, 0, word, command)]);
 		cmdTokens.AddRange(paramTokens);
 		//	If a comment is present, add it before things are wrapped up
 		if (comment is not null)
