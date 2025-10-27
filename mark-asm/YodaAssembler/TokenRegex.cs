@@ -121,7 +121,7 @@ public static partial class TokenRegex
 	/// Detects and extracts a direct symbol from the text
 	/// </summary>
 	/// <returns></returns>
-	[GeneratedRegex(@"^\s*\[(\w{1,32})\]\s*$", RegexOptions.Compiled | RegexOptions.ECMAScript)]
+	[GeneratedRegex(@"^\s*\[([A-Za-z_]\w{0,31})\]\s*$", RegexOptions.Compiled | RegexOptions.ECMAScript)]
 	public static partial Regex DirectSymbol();
 	
 	/// <summary>
@@ -142,7 +142,7 @@ public static partial class TokenRegex
 	/// Detects and extracts a direct symbol from the text
 	/// </summary>
 	/// <returns></returns>
-	[GeneratedRegex(@"^\s*\[\[(\w{1,32})\]\]\s*$", RegexOptions.Compiled | RegexOptions.ECMAScript)]
+	[GeneratedRegex(@"^\s*\[\[([A-Za-z_]\w{0,31})\]\]\s*$", RegexOptions.Compiled | RegexOptions.ECMAScript)]
 	public static partial Regex IndirectSymbol();
 
 }
