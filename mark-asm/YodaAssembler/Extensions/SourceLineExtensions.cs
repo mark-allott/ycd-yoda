@@ -7,6 +7,16 @@ namespace YodaAssembler.Extensions;
 public static partial class SourceLineExtensions
 {
 	/// <summary>
+	/// Determines whether the <paramref name="line"/> is blank - i.e. has no characters, is empty, or contains only whitespace
+	/// </summary>
+	/// <param name="line">The line of source to be checked</param>
+	/// <returns>True if the line has no content or is wholly whitespace</returns>
+	public static bool IsBlank(this SourceLine line)
+	{
+		return string.IsNullOrWhiteSpace(line.Text);
+	}
+
+	/// <summary>
 	/// Determines whether the whole <paramref name="line"/> can be regarded as a comment
 	/// </summary>
 	/// <param name="line">The line of source to be checked</param>
@@ -16,17 +26,6 @@ public static partial class SourceLineExtensions
 		return line.Text.IsComment();
 	}
 
-	/// <summary>
-	/// Determines whether the <paramref name="text"/> is a comment
-	/// </summary>
-	/// <param name="text">The text to be checked</param>
-	/// <returns>True if the text represents the start of a comment</returns>
-	public static bool IsComment(this string text)
-	{
-		return !string.IsNullOrWhiteSpace(text) &&
-		       text.Trim().StartsWith(';');
-	}
-	
 	/// <summary>
 	/// Determines whether the <paramref name="line"/> contains a comment - either as the starting character, or as part of an inline comment
 	/// </summary>
@@ -39,34 +38,13 @@ public static partial class SourceLineExtensions
 	}
 
 	/// <summary>
-	/// Determines whether the <paramref name="text"/> supplied contains an inline comment character
-	/// </summary>
-	/// <param name="text">The source text to be checked</param>
-	/// <returns>True if the semicolon character is found in <paramref name="text"/></returns>
-	public static bool HasComment(this string text)
-	{
-		return !string.IsNullOrWhiteSpace(text) &&
-		       text.Contains(';');
-	}
-	
-	/// <summary>
-	/// Determines whether the <paramref name="line"/> is blank - i.e. has no characters, is empty, or contains only whitespace
-	/// </summary>
-	/// <param name="line">The line of source to be checked</param>
-	/// <returns>True if the line has no content or is wholly whitespace</returns>
-	public static bool IsBlank(this SourceLine line)
-	{
-		return string.IsNullOrWhiteSpace(line.Text);
-	}
-
-	/// <summary>
 	/// Determines whether the <paramref name="line"/> contains an assembler directive
 	/// </summary>
 	/// <param name="line">The line of source to be checked</param>
 	/// <returns>True if the line contains one of the assembler directives such as <c>[DATA]</c>, or <c>[PROGRAM]</c></returns>
 	public static bool HasDirective(this SourceLine line)
 	{
-		return DirectiveRegex().Match(line.Text.Trim()).Success;
+		return line.Text.HasDirective();
 	}
 
 	/// <summary>
@@ -86,23 +64,12 @@ public static partial class SourceLineExtensions
 	/// <returns>The type of the directive detected, or Unknown</returns>
 	public static DirectiveType GetDirectiveType(this string text)
 	{
+		//	Get the directive, from one of the DirectiveType values, from text (if present)
+		var result = text.GetDirective<DirectiveType>();
+		//	Mask the returned value with 0x0f
+		//	This has the effect of limiting the output directives to the "base" values, but still permitting use of the abbreviations or alternates
+		return (DirectiveType)((int)result & 0x0f);
 		//	Blank text is automatically unknown... What were you thinking???
-		if (string.IsNullOrWhiteSpace(text))
-			return DirectiveType.Unknown;
-		
-		//	Check the trimmed text against known directive values
-		var m = DirectiveRegex().Match(text.Trim());
-		
-		/*
-		 * A bit of Enum magic to get a "common" value - allows for shortcuts
-		 * like [PROG] and [CONST] to be used, yet still return the more common
-		 * enum values of "Program" and "Constants":
-		 *	1)	parse the text to equivalent DirectiveType enum value
-		 *	2)	Mask the value with 0x0F to get the lower nibble value and convert back
-		 */
-		return Enum.TryParse(m.Groups[2].Value, true, out DirectiveType directiveType)
-			? (DirectiveType)((int)directiveType & 0x0f)
-			: DirectiveType.Unknown;
 	}
 	
 	/// <summary>
@@ -116,16 +83,6 @@ public static partial class SourceLineExtensions
 	}
 
 	/// <summary>
-	/// Determines whether the <paramref name="text"/> contains a label identifier as the first part of the input
-	/// </summary>
-	/// <param name="text">The source text to be checked</param>
-	/// <returns>True if the first part of the text starts with the label identifier character</returns>
-	public static bool HasLabel(this string text)
-	{
-		return LabelRegex().Match(text.Trim()).Success;
-	}
-	
-	/// <summary>
 	/// Extracts a label from the <paramref name="line"/>, if one exists
 	/// </summary>
 	/// <param name="line">The line of source to check</param>
@@ -133,26 +90,6 @@ public static partial class SourceLineExtensions
 	public static string GetLabel(this SourceLine line)
 	{
 		return line.Text.GetLabel();
-	}
-	
-	/// <summary>
-	/// Extracts a label from the <paramref name="text"/>, if one exists
-	/// </summary>
-	/// <param name="text">The source text to check</param>
-	/// <returns>The name of the label, if present, or a blank string</returns>
-	public static string GetLabel(this string text)
-	{
-		//	Nothing there, no label!
-		if (string.IsNullOrWhiteSpace(text))
-			return string.Empty;
-		
-		//	Use the regex to grab any label from the text
-		var m =  LabelRegex().Match(text.Trim());
-
-		//	Any captured label from the regex should be in group[1], otherwise no label present
-		return m.Success 
-			? m.Groups[1].Value 
-			: string.Empty;
 	}
 	
     [GeneratedRegex(@"^(\[(PROG(RAM)?|DATA|CONST(ANTS)?)\])", RegexOptions.IgnoreCase)]
