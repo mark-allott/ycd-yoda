@@ -55,13 +55,30 @@ public record SourceLine
 	/// </summary>
 	public bool IsComment => this.IsComment();
 
+	/// <summary>
+	/// Indicates whether the line contains a label
+	/// </summary>
 	public bool IsLabel => this.HasLabel();
+
+	/// <summary>
+	/// Indicates whether the line contains a comment (detects both inline and full-line comments)
+	/// </summary>
 	public bool HasComment => this.HasComment();
+
+	/// <summary>
+	/// Determines whether the line is a directive
+	/// </summary>
 	public bool IsDirective => this.IsDirective();
+
+	/// <summary>
+	/// Extracts the <see cref="DirectiveType"/> from the line
+	/// </summary>
 	public DirectiveType Directive => Text.GetDirectiveType();
 
 	#endregion
 
-
+	/// <summary>
+	/// Used to mark the line as having been completely processed
+	/// </summary>
 	public void SetHandled() => Handled = true;
 }
