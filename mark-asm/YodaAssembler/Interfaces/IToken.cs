@@ -8,19 +8,24 @@ public interface IToken
 	///	The type of token this is
 	/// </summary>
 	TokenType TokenType { get; }
-	
+
 	/// <summary>
 	/// Specifies the line number in the source code where this token is located
 	/// </summary>
 	int LineNumber { get; }
-	
+
 	/// <summary>
 	/// Specifies the order in which the token appears on the line
 	/// </summary>
 	int LineSequence { get; }
-	
+
 	/// <summary>
 	/// The text associated with the token
 	/// </summary>
 	string? Text { get; }
+
+	/// <summary>
+	/// Defines what type of parameter this token is
+	/// </summary>
+	ParameterTypes ParameterType { get; }
 }

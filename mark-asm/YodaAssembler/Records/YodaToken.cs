@@ -14,6 +14,8 @@ public record YodaToken
 	public int LineSequence { get; private init; }
 	public string? Text { get; private init; }
 
+	public ParameterTypes ParameterType { get; private init; }
+
 	#endregion
 
 	#region Constructors
@@ -25,8 +27,9 @@ public record YodaToken
 	/// <param name="lineNumber">The line number of the source on which the token is located</param>
 	/// <param name="lineSequence">The sequence within the line number of the source this token is located</param>
 	/// <param name="text">The text (if any) associated with this token</param>
+	/// <param name="parameterType">The type of parameter this token is</param>
 	/// <exception cref="ArgumentOutOfRangeException"></exception>
-	protected YodaToken(TokenType tokenType, int lineNumber, int lineSequence, string? text)
+	protected YodaToken(TokenType tokenType, int lineNumber, int lineSequence, string? text, ParameterTypes parameterType = ParameterTypes.None)
 	{
 		if (tokenType.Equals(TokenType.Unknown))
 			throw new ArgumentOutOfRangeException(nameof(tokenType), TokenType.Unknown,
@@ -38,6 +41,7 @@ public record YodaToken
 		LineNumber = lineNumber;
 		LineSequence = lineSequence;
 		Text = text?.Trim();
+		ParameterType = parameterType;
 	}
 
 	/// <summary>
@@ -56,10 +60,11 @@ public record YodaToken
 	/// <param name="lineNumber">The line on which the source appears</param>
 	/// <param name="lineSequence">The position within the line</param>
 	/// <param name="text">The text for the token</param>
+	/// <param name="parameterType">The type of parameter this is</param>
 	/// <returns>The requested token type, if validation passed</returns>
 	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	/// <exception cref="ArgumentException"></exception>
-	private static YodaToken Create(TokenType tokenType, int lineNumber, int lineSequence, string text)
+	private static YodaToken Create(TokenType tokenType, int lineNumber, int lineSequence, string text, ParameterTypes parameterType =  ParameterTypes.None)
 	{
 		ArgumentNullException.ThrowIfNull(text, nameof(text));
 
@@ -96,7 +101,7 @@ public record YodaToken
 					: YodaCompositeToken.CreateIndirectNumber(lineNumber, lineSequence, text, numericToken);
 
 			default:
-				return new YodaToken(tokenType, lineNumber, lineSequence, m.Groups[1].Value);
+				return new YodaToken(tokenType, lineNumber, lineSequence, m.Groups[1].Value, parameterType);
 		}
 	}
 
