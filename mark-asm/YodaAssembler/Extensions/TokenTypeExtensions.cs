@@ -76,7 +76,7 @@ public static partial class TokenTypeExtensions
 	/// <param name="text">The text to be checked</param>
 	/// <returns>True if a directive pattern is detected</returns>
 	/// <remarks></remarks>
-	public static bool HasDirective(this string text)
+	public static bool IsDirective(this string text)
 	{
 		return !string.IsNullOrWhiteSpace(text) &&
 		       TokenRegex.IsDirective().Match(text).Success;
