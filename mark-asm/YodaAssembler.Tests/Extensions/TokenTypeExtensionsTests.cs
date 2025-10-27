@@ -70,16 +70,20 @@ public class TokenTypeExtensionsTests
 	[DataRow(";multi-word comment", "multi-word comment", DisplayName = "test multi-word comment")]
 	[DataRow(" ;multi-word comment", "multi-word comment", DisplayName = "test multi-word comment with initial space")]
 	[DataRow("\t;multi-word comment", "multi-word comment", DisplayName = "test multi-word comment with initial tab")]
-	[DataRow("[directive] ;multi-word comment", "multi-word comment",
-		DisplayName = "test inline multi-word comment with space")]
-	[DataRow("[directive]\t;multi-word comment", "multi-word comment",
-		DisplayName = "test inline multi-word comment with tab")]
+	[DataRow("[directive] ;multi-word comment", "multi-word comment", DisplayName = "test inline multi-word comment with space")]
+	[DataRow("[directive]\t;multi-word comment", "multi-word comment", DisplayName = "test inline multi-word comment with tab")]
 	[DataRow("; comment", "comment", DisplayName = "test comment with space between semi-colon and comments")]
 	[DataRow(" ; comment", "comment", DisplayName = "test comment with space before and after semi-colon")]
 	[DataRow(" ;\tcomment", "comment", DisplayName = "test comment with space before semi-colon and tab after")]
 	[DataRow(";\tcomment", "comment", DisplayName = "test comment with tab after semi-colon")]
 	[DataRow("\t; comment", "comment", DisplayName = "test comment with tab before and space after semi-colon")]
 	[DataRow("\t;\tcomment", "comment", DisplayName = "test comment with tabs before and after semi-colon")]
+	[DataRow("; comment ", "comment", DisplayName = "test comment with space between semi-colon and comments and space suffix")]
+	[DataRow(" ; comment ", "comment", DisplayName = "test comment with space before and after semi-colon and space suffix")]
+	[DataRow(" ;\tcomment\t", "comment", DisplayName = "test comment with space before semi-colon and tab after and tab suffix")]
+	[DataRow(";\tcomment\t", "comment", DisplayName = "test comment with tab after semi-colon and tab suffix")]
+	[DataRow("\t; comment\t ", "comment", DisplayName = "test comment with tab before and space after semi-colon and whitespace suffix")]
+	[DataRow("\t;\tcomment \t", "comment", DisplayName = "test comment with tabs before and after semi-colon and whitespace suffix")]
 	public void ValidateGetComment(string text, string expected)
 	{
 		var sut = text.GetComment();
