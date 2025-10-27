@@ -8,7 +8,7 @@ public record YodaNumericValueToken
 	public int NumericValue { get; protected init; }
 
 	protected YodaNumericValueToken(int lineNumber, int lineSequence, string? text)
-		: base(TokenType.LiteralNumber, lineNumber, lineSequence, text)
+		: base(TokenType.LiteralNumber, lineNumber, lineSequence, text, ParameterTypes.LiteralNumber)
 	{
 	}
 }
