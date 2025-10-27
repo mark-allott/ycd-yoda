@@ -9,6 +9,12 @@ public enum TokenType
 	Label,
 	Command,
 	Operand,
-	Literal,
+	LiteralString,
+	LiteralChar,
+	LiteralNumber,
 	Symbol,
+	DirectNumber,
+	DirectSymbol,
+	IndirectNumber,
+	IndirectSymbol,
 }
