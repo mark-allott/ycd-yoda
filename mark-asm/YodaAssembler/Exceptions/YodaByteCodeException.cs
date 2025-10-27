@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace YodaAssembler.Exceptions;
 
+[ExcludeFromCodeCoverage]
 public class YodaByteCodeException
 	: Exception
 {

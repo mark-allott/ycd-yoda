@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using YodaAssembler.Enums;
 using YodaAssembler.Records;
 
 namespace YodaAssembler.Exceptions;
 
+[ExcludeFromCodeCoverage]
 public class TokeniserException
 	: Exception
 {
@@ -77,6 +79,7 @@ public class TokeniserException
 	}
 }
 
+[ExcludeFromCodeCoverage]
 public class DirectiveException
 	: TokeniserException
 {
