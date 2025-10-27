@@ -90,6 +90,9 @@ public record YodaToken
 
 		switch (tokenType)
 		{
+			case TokenType.Directive:
+				return YodaDirectiveToken.Create(lineNumber, lineSequence, m.Groups[1].Value);
+			
 			case TokenType.LiteralNumber:
 				return CreateNumericValueToken(m, lineNumber, lineSequence, tokenType);
 			
