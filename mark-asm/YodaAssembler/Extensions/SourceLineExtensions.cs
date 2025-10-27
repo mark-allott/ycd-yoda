@@ -121,6 +121,6 @@ public static partial class SourceLineExtensions
 	/// <returns>The name of the label, if present, or a blank string</returns>
 	public static string GetLabel(this SourceLine line)
 	{
-		return line.Text.GetLabel();
+		return line.Text.GetLabelDetail().label!;
 	}
 }
