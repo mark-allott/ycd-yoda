@@ -369,12 +369,7 @@ public class Yoda
 				if (token.Bytes[i] is not null)
 					continue;
 
-				if (!Symbols.TryGetValue(token.Tokens[i].Text!, out var valueToken))
-					throw new YodaByteCodeException(token.LineNumber, $"Undefined symbol: '{token.Tokens[i].Text}'");
-				if (valueToken is not YodaNumericValueToken numericToken)
-					throw new YodaByteCodeException(token.LineNumber,
-						$"Invalid token type for symbol: {valueToken?.TokenType ?? TokenType.Unknown}");
-				token.Bytes[i] = (byte)numericToken.NumericValue;
+				token.Bytes[i] = GetSymbolValue(token.Tokens[i]);
 			}
 		}
 	}
@@ -420,17 +415,17 @@ public class Yoda
 		File.WriteAllBytes(Path.Combine(DefaultFilePath, fileName), _bootFileData);
 	}
 
-	private int GetDirectiveParameterValue(YodaToken token, DirectiveType directiveType)
+	private byte GetDirectiveParameterValue(YodaToken token, DirectiveType directiveType)
 	{
 		if (token is YodaNumericValueToken numericToken)
-			return numericToken.NumericValue;
+			return (byte)numericToken.NumericValue;
 		if (token.TokenType is TokenType.Symbol)
 			return GetSymbolValue(token);
 		throw new DirectiveException(directiveType,
 			$"Invalid token type for [{directiveType}] parameter: {token.TokenType}");
 	}
 
-	private int GetSymbolValue(YodaToken token)
+	private byte GetSymbolValue(YodaToken token, List<YodaToken>? chain = null)
 	{
 		ArgumentNullException.ThrowIfNull(token, nameof(token));
 		
@@ -444,10 +439,16 @@ public class Yoda
 			throw new YodaByteCodeException(token.LineNumber, $"Symbol '{token.Text}' is undefined");
 
 		if (value is YodaNumericValueToken numericToken)
-			return numericToken.NumericValue;
+			return (byte)numericToken.NumericValue;
 
 		if (value.TokenType is TokenType.Symbol)
-			return GetSymbolValue(value);
+		{
+			chain ??= [];
+			if (chain.Contains(value))
+				throw new YodaByteCodeException(token.LineNumber, $"Symbol '{token.Text}' results in a recursive lookup");
+			chain.Add(value);
+			return GetSymbolValue(value, chain);
+		}
 
 		throw new TokeniserException(token.LineNumber, "Invalid token for symbol");
 	}

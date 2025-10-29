@@ -66,12 +66,13 @@ public partial class YodaTests
 
 	public static string DynamicDataTestDisplayNameProvider(MethodInfo methodInfo, object[] data)
 	{
+		var testMethodName = methodInfo.Name;
 		if (data.Length == 0)
-			return "Empty data";
+			return $"{testMethodName}: Empty data";
 
 		if (data[0] is DynamicDataTest test)
-			return test.DisplayName;
-		return $"Not a valid {nameof(DynamicDataTest)} object";
+			return $"{testMethodName}: {test.DisplayName}";
+		return $"{testMethodName}: Not a valid {nameof(DynamicDataTest)} object";
 	}
 
 	#endregion
@@ -864,7 +865,7 @@ public partial class YodaTests
 		test.ByteCodeTokens.Add(YodaTokenByteCode.Code(CodeDirective.LineNumber + 2, 0,
 			test.Tokens[2..], GeneratorStrategy));
 		yield return test;
-		
+
 		//	Code directive, with label, terminated with invalid non-code token
 		test = new CompileToByteCodeTestData
 		{
@@ -873,12 +874,12 @@ public partial class YodaTests
 			ExpectedExceptionType = typeof(TokeniserException)
 		};
 		test.Tokens.AddRange(test.Processor.Parse(["[code]", ":start", "jz 10 10"]));
-		test.Tokens.Add(YodaToken.LiteralChar(1000,0, "'a'"));
+		test.Tokens.Add(YodaToken.LiteralChar(1000, 0, "'a'"));
 		test.Processor.InitialiseSymbols(test.Tokens);
 		test.ByteCodeTokens.Add(YodaTokenByteCode.Code(CodeDirective.LineNumber + 2, 0,
 			test.Tokens[2..^1], GeneratorStrategy));
-		yield return test;	
-		
+		yield return test;
+
 		//	Code and data that would end up occupying the same memory locations
 		//	N.B	-	this is not an error as yet. Compilation to bytecode segments doesn't check for overlaps automatically
 		//			that check is performed later, when attempting to bring everything together
@@ -891,10 +892,10 @@ public partial class YodaTests
 		test.Tokens.AddRange(test.Processor.Parse(["[code] 0x10", ":start", "jz 10 10", "[data] 0x10", "\"Text\""]));
 		test.Processor.InitialiseSymbols(test.Tokens);
 		test.ByteCodeTokens.Add(YodaTokenByteCode.Code(test.Tokens[3].LineNumber, 0x10,
-			test.Tokens.GetRange(3,3), GeneratorStrategy));
+			test.Tokens.GetRange(3, 3), GeneratorStrategy));
 		test.ByteCodeTokens.Add(YodaTokenByteCode.Data(test.Tokens[^1].LineNumber, 0x10,
 			[test.Tokens[^1]], GeneratorStrategy));
-		yield return test;	
+		yield return test;
 	}
 
 	internal static IEnumerable<object[]> CompilePass2TestProvider()
@@ -917,7 +918,7 @@ public partial class YodaTests
 				],
 			}
 		];
-		
+
 		yield return
 		[
 			new SourceCodeDataTest
@@ -939,7 +940,7 @@ public partial class YodaTests
 				],
 			}
 		];
-		
+
 		yield return
 		[
 			new SourceCodeDataTest
@@ -959,6 +960,61 @@ public partial class YodaTests
 					"\"test string\"",
 					"0xC0, start_of_data, 0xC0"
 				],
+			}
+		];
+	}
+
+	internal static IEnumerable<object[]> CompilePass3TestProvider()
+	{
+		yield return
+		[
+			new CompileTestData
+			{
+				ShouldFail = false,
+				DisplayName = "Check chain resolves correctly",
+				Lines =
+				[
+					"[const]",
+					"a=b",
+					"b=c",
+					"c=0x80",
+					"[code]",
+					"wait",
+					"jz a 0",
+					"halt",
+					"[data] c",
+					"1"
+				],
+				ExpectedBytes =
+				{
+					[0] = WaitCommand.OpCode,
+					[1] = (byte)(JumpIfZeroCommand.OpCode | 3),
+					[2] = 0x80,
+					[3] = 0,
+					[4] = 0,
+					[0x80] = 1
+				}
+			}
+		];
+		yield return
+		[
+			new CompileTestData
+			{
+				DisplayName = "Chain has recursive value",
+				Lines =
+				[
+					"[const]",
+					"a=b",
+					"b=c",
+					"c=a",
+					"[code]",
+					"wait",
+					"jz a 0",
+					"halt",
+					"[data] 0x80",
+					"1"
+				],
+				ExpectedExceptionType = typeof(YodaByteCodeException)
 			}
 		];
 	}
@@ -1002,7 +1058,7 @@ public partial class YodaTests
 				}
 			}
 		];
-		
+
 		yield return
 		[
 			new CompileTestData
@@ -1040,7 +1096,7 @@ public partial class YodaTests
 				}
 			}
 		];
-		
+
 		yield return
 		[
 			new CompileTestData
@@ -1059,7 +1115,7 @@ public partial class YodaTests
 				ExpectedExceptionType = typeof(YodaByteCodeException)
 			}
 		];
-		
+
 		yield return
 		[
 			new CompileTestData
@@ -1078,7 +1134,7 @@ public partial class YodaTests
 				ExpectedExceptionType = typeof(YodaByteCodeException)
 			}
 		];
-		
+
 		yield return
 		[
 			new CompileTestData
@@ -1097,7 +1153,7 @@ public partial class YodaTests
 				ExpectedExceptionType = typeof(YodaByteCodeException)
 			}
 		];
-		
+
 		yield return
 		[
 			new CompileTestData

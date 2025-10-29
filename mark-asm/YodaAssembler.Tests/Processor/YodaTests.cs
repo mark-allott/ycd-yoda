@@ -185,6 +185,38 @@ public partial class YodaTests
 	}
 
 	[TestMethod]
+	[DynamicData(nameof(CompilePass3TestProvider), DynamicDataSourceType.Method,
+		DynamicDataDisplayName = nameof(DynamicDataTestDisplayNameProvider))]
+	public void ValidateCompilePass3(CompileTestData test)
+	{
+		Yoda sut = new  Yoda(".");
+		sut.Should().NotBeNull();
+		
+		if (test.ShouldFail)
+		{
+			if (test.ExpectedExceptionType is null)
+				Assert.Fail("Cannot check exception type");
+			try
+			{
+				sut.Compile(test.Lines);
+				Assert.Fail($"Should have thrown exception of type {test.ExpectedExceptionType.Name}");
+			}
+			catch (Exception e)
+			{
+				if (e.GetType() != test.ExpectedExceptionType)
+					Assert.Fail($"Expected {test.ExpectedExceptionType.Name}, but got {e.GetType().Name}");
+			}
+			return;
+		}
+
+		//	Compile the source in test data
+		sut.Compile(test.Lines);
+		sut.BootFileData.Should().NotBeNull();
+		sut.BootFileData.Count.Should().Be(256);
+		sut.BootFileData.Should().ContainInConsecutiveOrder(test.ExpectedBytes);
+	}
+
+	[TestMethod]
 	[DynamicData(nameof(CompilePass4TestProvider), DynamicDataSourceType.Method,
 		DynamicDataDisplayName = nameof(DynamicDataTestDisplayNameProvider))]
 	public void ValidateCompilePass4(CompileTestData test)
