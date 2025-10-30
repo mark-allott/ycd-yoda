@@ -71,7 +71,7 @@ public class YodaByteCodeGeneratorStrategyTests
 			TokenType.Blank => YodaToken.Blank(1, 0),
 			TokenType.Comment => YodaToken.Comment(1, 0, text ?? ";a comment"),
 			TokenType.Directive => YodaToken.Directive(1, 0, text ?? "[directive]"),
-			TokenType.Label => YodaToken.Label(1, 0, text ?? ":_label"),
+			TokenType.Label => YodaToken.Label(1, 0, text ?? "_label:"),
 			TokenType.Operand => YodaToken.Operand(1, 0, text ?? "operand"),
 			TokenType.LiteralString => YodaToken.LiteralString(1, 0, text ?? "\"literal string\""),
 			TokenType.LiteralChar => YodaToken.LiteralChar(1, 0, text ?? "'c'"),

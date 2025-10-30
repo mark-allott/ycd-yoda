@@ -67,11 +67,11 @@ public class SourceLineTests
 	[DataRow(null, false, DisplayName = "null string")]
 	[DataRow("", false, DisplayName = "string.Empty")]
 	[DataRow(":", false, DisplayName = "label prefix only")]
-	[DataRow(":000", false, DisplayName = ":000")]
-	[DataRow(": _00", false, DisplayName = ": _00")]
-	[DataRow(":_00", true, DisplayName = ":_00")]
-	[DataRow(":aLongSymbol", true, DisplayName = ":aLongSymbol")]
-	[DataRow(":aVeryLongSymbolNameThatShouldNotWork", false, DisplayName = ":aVeryLongSymbolNameThatShouldNotWork")]
+	[DataRow("000:", false, DisplayName = "000:")]
+	[DataRow("_00 :", false, DisplayName = "_00 :")]
+	[DataRow("_00:", true, DisplayName = "_00:")]
+	[DataRow("aLongSymbol:", true, DisplayName = "aLongSymbol:")]
+	[DataRow("aVeryLongSymbolNameThatShouldNotWork:", false, DisplayName = "aVeryLongSymbolNameThatShouldNotWork:")]
 	public void ValidateIsLabel(string? text, bool expected)
 	{
 		var sut = new SourceLine(1, text);

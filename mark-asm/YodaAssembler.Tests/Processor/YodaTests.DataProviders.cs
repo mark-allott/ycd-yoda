@@ -231,13 +231,13 @@ public partial class YodaTests
 			new ParseTestData
 			{
 				ShouldFail = false,
-				DisplayName = "[const] | [code] | :label | cmd",
+				DisplayName = "[const] | [code] | label: | cmd",
 				Lines =
 				[
 					"[const]",
 					"x=123",
 					"[code] 0x10",
-					":start_of_program",
+					"start_of_program:",
 					"wait",
 					"inc x"
 				],
@@ -481,7 +481,7 @@ public partial class YodaTests
 			Lines =
 			[
 				"[code]",
-				":start",
+				"start:",
 				WaitCommand.Mnemonic,
 				$"{JumpIfZeroCommand.Mnemonic} jump_flag, start",
 				HaltCommand.Mnemonic,
@@ -489,7 +489,7 @@ public partial class YodaTests
 				"[data] 0x20",
 				"\"Text\"",
 				"[data] 0x40",
-				":jump_flag",
+				"jump_flag:",
 				"0"
 			],
 			ExpectedBytes =
@@ -497,9 +497,9 @@ public partial class YodaTests
 				[0] = WaitCommand.OpCode,
 				//	Jump with direct/direct addressing, so adds 3 to the base opCode
 				[1] = (byte)(JumpIfZeroCommand.OpCode + 3),
-				//	:jump_flag label's address
+				//	jump_flag: label's address
 				[2] = 0x40,
-				//	:start label's address
+				//	start: label's address
 				[3] = 0,
 				[4] = HaltCommand.OpCode,
 				[0x20] = (byte)'T',
@@ -860,7 +860,7 @@ public partial class YodaTests
 			DisplayName = "CompileToByteCode: Code checks => [code] directive with label",
 			ByteCodeTokens = []
 		};
-		test.Tokens.AddRange(test.Processor.Parse(["[code]", ":start", "jz 10 10"]));
+		test.Tokens.AddRange(test.Processor.Parse(["[code]", "start:", "jz 10 10"]));
 		test.Processor.InitialiseSymbols(test.Tokens);
 		test.ByteCodeTokens.Add(YodaTokenByteCode.Code(CodeDirective.LineNumber + 2, 0,
 			test.Tokens[2..], GeneratorStrategy));
@@ -873,7 +873,7 @@ public partial class YodaTests
 			ByteCodeTokens = [],
 			ExpectedExceptionType = typeof(TokeniserException)
 		};
-		test.Tokens.AddRange(test.Processor.Parse(["[code]", ":start", "jz 10 10"]));
+		test.Tokens.AddRange(test.Processor.Parse(["[code]", "start:", "jz 10 10"]));
 		test.Tokens.Add(YodaToken.LiteralChar(1000, 0, "'a'"));
 		test.Processor.InitialiseSymbols(test.Tokens);
 		test.ByteCodeTokens.Add(YodaTokenByteCode.Code(CodeDirective.LineNumber + 2, 0,
@@ -889,7 +889,7 @@ public partial class YodaTests
 			DisplayName = "CompileToByteCode: Code checks => [code] and [data] directive with same memory location",
 			ByteCodeTokens = [],
 		};
-		test.Tokens.AddRange(test.Processor.Parse(["[code] 0x10", ":start", "jz 10 10", "[data] 0x10", "\"Text\""]));
+		test.Tokens.AddRange(test.Processor.Parse(["[code] 0x10", "start:", "jz 10 10", "[data] 0x10", "\"Text\""]));
 		test.Processor.InitialiseSymbols(test.Tokens);
 		test.ByteCodeTokens.Add(YodaTokenByteCode.Code(test.Tokens[3].LineNumber, 0x10,
 			test.Tokens.GetRange(3, 3), GeneratorStrategy));
@@ -909,7 +909,7 @@ public partial class YodaTests
 				Lines =
 				[
 					"[code]",
-					":start_of_program",
+					"start_of_program:",
 					"wait",
 					"halt",
 					"[data] 0x80",
@@ -931,7 +931,7 @@ public partial class YodaTests
 					"a=b",
 					"c=2",
 					"[code]",
-					":start_of_program",
+					"start_of_program:",
 					"wait",
 					"halt",
 					"[data] 0x80",
@@ -953,7 +953,7 @@ public partial class YodaTests
 					"a=b",
 					"c=2",
 					"[code]",
-					":start_of_program",
+					"start_of_program:",
 					"wait",
 					"halt",
 					"[data] 0x80",
@@ -1030,7 +1030,7 @@ public partial class YodaTests
 				Lines =
 				[
 					"[code]",
-					":start_of_program",
+					"start_of_program:",
 					"wait",
 					"halt",
 					"[data] 0x80",
@@ -1068,7 +1068,7 @@ public partial class YodaTests
 				Lines =
 				[
 					"[code] 0x10",
-					":start_of_program",
+					"start_of_program:",
 					"wait",
 					"halt",
 					"[data] 0",
@@ -1105,7 +1105,7 @@ public partial class YodaTests
 				Lines =
 				[
 					"[code] 0x10",
-					":start_of_program",
+					"start_of_program:",
 					"wait",
 					"halt",
 					"[data] 0x10",
@@ -1124,7 +1124,7 @@ public partial class YodaTests
 				Lines =
 				[
 					"[code] 0x18",
-					":start_of_program",
+					"start_of_program:",
 					"wait",
 					"halt",
 					"[data] 0x10",
@@ -1143,7 +1143,7 @@ public partial class YodaTests
 				Lines =
 				[
 					"[code] 0x100",
-					":start_of_program",
+					"start_of_program:",
 					"wait",
 					"halt",
 					"[data] 0x18",
@@ -1162,7 +1162,7 @@ public partial class YodaTests
 				Lines =
 				[
 					"[code]",
-					":start_of_program",
+					"start_of_program:",
 					"wait",
 					"halt",
 					"[data] 0x100",

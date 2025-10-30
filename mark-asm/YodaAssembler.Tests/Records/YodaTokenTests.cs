@@ -178,29 +178,29 @@ public class YodaTokenTests
 
 		//	Convert the selections into an object[] of text to pass into the YodaToken constructor, plus expected label
 		List<object[]> data = singleCharData
-			.Select(s => new object[] { $"{s.prefix}:{s.firstChar}{s.suffix}", $"{s.firstChar}" })
+			.Select(s => new object[] { $"{s.prefix}{s.firstChar}:{s.suffix}", $"{s.firstChar}" })
 			.ToList();
 		//	Using the same single-character label data, append an inline comment
 		data.AddRange(singleCharData.Select(s => new object[]
-			{ $"{s.prefix}:{s.firstChar}{s.suffix};comment text", $"{s.firstChar}" }));
+			{ $"{s.prefix}{s.firstChar}:{s.suffix};comment text", $"{s.firstChar}" }));
 
 		//	Assemble another list of additional 2nd valid characters for a label, with varying whitespace prefix and suffix 
 		var secondData = singleCharData
 			.SelectMany(sc => LabelGoodOtherChars, (id, sc) => new { id.prefix, label = $"{id.firstChar}{sc}", id.suffix })
 			.ToList();
 		//	Add this extended 2-character combination for testing
-		data.AddRange(secondData.Select(s => new object[] { $"{s.prefix}:{s.label}{s.suffix}", s.label }));
+		data.AddRange(secondData.Select(s => new object[] { $"{s.prefix}{s.label}:{s.suffix}", s.label }));
 		//	Using the same 2-character label data, append an inline comment
 		data.AddRange(secondData.Select(s => new object[]
-			{ $"{s.prefix}:{s.label}{s.suffix} ; 2char comment text", s.label }));
+			{ $"{s.prefix}{s.label}:{s.suffix} ; 2char comment text", s.label }));
 
 		//	Need to generate a valid, but random label that tests the limit of the label length
 		string longLabel = GenerateRandomLabel(32);
 
 		//	Add long label test
-		data.Add([$":{longLabel}", longLabel]);
+		data.Add([$"{longLabel}:", longLabel]);
 		//	Add long label + comment test
-		data.Add([$":{longLabel}\t;\tLong label comment", longLabel]);
+		data.Add([$"{longLabel}:\t;\tLong label comment", longLabel]);
 		return data;
 	}
 

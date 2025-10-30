@@ -53,12 +53,12 @@ public class YodaTokeniserStategyTests
 	[DataRow("[program]|||[data] 0b0||;comment",
 		new[] { TokenType.Directive, TokenType.Blank, TokenType.Blank, TokenType.Directive, TokenType.LiteralNumber, TokenType.Blank, TokenType.Comment },
 		new[] { 1, 2, 3, 4, 4, 5, 6 }, new[] { 0, 0, 0, 0, 1, 0, 0 }, DisplayName = "[data] 0b0||; comment")]
-	[DataRow("[code] 0 ;comment||:start",
+	[DataRow("[code] 0 ;comment||start:",
 		new[] { TokenType.Directive, TokenType.LiteralNumber, TokenType.Comment, TokenType.Blank, TokenType.Label },
-		new[] { 1, 1, 1, 2, 3 }, new[] { 0, 1, 2, 0, 0 }, DisplayName = "[code] 0 ;comment||:start")]
-	[DataRow("[code] 0 ;comment||:start\t;\tanother comment",
+		new[] { 1, 1, 1, 2, 3 }, new[] { 0, 1, 2, 0, 0 }, DisplayName = "[code] 0 ;comment||start:")]
+	[DataRow("[code] 0 ;comment||start:\t;\tanother comment",
 		new[] { TokenType.Directive, TokenType.LiteralNumber, TokenType.Comment, TokenType.Blank, TokenType.Label, TokenType.Comment },
-		new[] { 1, 1, 1, 2, 3, 3 }, new[] { 0, 1, 2, 0, 0, 1 }, DisplayName = "[code] 0 ;comment||:start")]
+		new[] { 1, 1, 1, 2, 3, 3 }, new[] { 0, 1, 2, 0, 0, 1 }, DisplayName = "[code] 0 ;comment||start:")]
 	[DataRow("[code] 0 ;comment|halt",
 		new[] { TokenType.Directive, TokenType.LiteralNumber, TokenType.Comment, TokenType.Command },
 		new[] { 1, 1, 1, 2 }, new[] { 0, 1, 2, 0 }, DisplayName = "[code] 0 ; comment|halt")]
@@ -147,7 +147,7 @@ public class YodaTokeniserStategyTests
 
 	[TestMethod]
 	[DataRow("[code]|stop", DisplayName = "stop is not a command")]
-	[DataRow(":label|[code]", DisplayName = "label before any directives")]
+	[DataRow("label:|[code]", DisplayName = "label before any directives")]
 	[DataRow("[code]||[const]|:label", DisplayName = "label in wrong directive")]
 	[DataRow("[code]|lff 0,0,0", DisplayName = "[code]|lff 0,0,0 - too many params")]
 	[DataRow("[code]|lff 0", DisplayName = "[code]|lff 0 - too few params")]

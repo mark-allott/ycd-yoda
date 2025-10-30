@@ -123,7 +123,7 @@ public partial class YodaTokeniserStrategy
 
 				//	Grab the label details and tokenise
 				var (label, comment) = line.Text.GetLabelDetail();
-				tokens.Add(YodaToken.Label(line.LineNumber, ++lineSequence, $":{label}"));
+				tokens.Add(YodaToken.Label(line.LineNumber, ++lineSequence, $"{label}:"));
 				if (comment is not null)
 					tokens.Add(YodaToken.Comment(line.LineNumber, ++lineSequence, $";{comment}"));
 			}
