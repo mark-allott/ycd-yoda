@@ -4,44 +4,33 @@ using YodaAssembler.Interfaces;
 namespace YodaAssembler.Records;
 
 public record YodaTokenByteCode
+	: ITokenByteCode
 {
-	#region Properties
+	#region ITokenByteCode implementation
 
-	/// <summary>
-	/// Hold the line number for the source of the tokens
-	/// </summary>
+	/// <inheritdoc />
 	public int LineNumber { get; private init; }
 
-	/// <summary>
-	/// The start location for the bytecode
-	/// </summary>
+	/// <inheritdoc />
 	public int MemoryLocation { get; private init; }
 
-	/// <summary>
-	/// The next memory location for the bytecode to occupy 
-	/// </summary>
+	/// <inheritdoc />
 	public int NextLocation => MemoryLocation + Bytes.Length;
 
-	/// <summary>
-	/// The type of directive causing the bytecode to be generated
-	/// </summary>
+	/// <inheritdoc />
 	public DirectiveType DirectiveType { get; private init; }
 
-	/// <summary>
-	/// A read-only collection of the tokens that make up the line of source code
-	/// </summary>
-	public IReadOnlyList<YodaToken> Tokens => _tokens.AsReadOnly();
+	/// <inheritdoc />
+	public IReadOnlyList<IToken> Tokens => _tokens.AsReadOnly();
 
-	/// <summary>
-	/// The bytecode representation for the tokens
-	/// </summary>
+	/// <inheritdoc />
 	public byte?[] Bytes { get; private init; }
 
 	#endregion
 
 	#region Fields
 
-	private readonly List<YodaToken> _tokens;
+	private readonly List<IToken> _tokens;
 
 	#endregion
 
@@ -61,7 +50,7 @@ public record YodaTokenByteCode
 	/// result in bytecode being generated
 	/// </remarks>
 	protected YodaTokenByteCode(int lineNumber, int memoryLocation, DirectiveType directiveType,
-		IEnumerable<YodaToken> tokens, IByteCodeGeneratorStrategy generatorStrategy)
+		IEnumerable<IToken> tokens, IByteCodeGeneratorStrategy generatorStrategy)
 	{
 		ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(lineNumber, 0, nameof(lineNumber));
 		ArgumentOutOfRangeException.ThrowIfLessThan(memoryLocation, 0, nameof(memoryLocation));
@@ -79,11 +68,11 @@ public record YodaTokenByteCode
 		Bytes = generatorStrategy.Generate(directiveType, _tokens);
 	}
 
-	public static YodaTokenByteCode Code(int lineNumber, int memoryLocation, IEnumerable<YodaToken> tokens,
+	public static YodaTokenByteCode Code(int lineNumber, int memoryLocation, IEnumerable<IToken> tokens,
 		IByteCodeGeneratorStrategy generatorStrategy)
 		=> new YodaTokenByteCode(lineNumber, memoryLocation, DirectiveType.Program, tokens, generatorStrategy);
 
-	public static YodaTokenByteCode Data(int lineNumber, int memoryLocation, IEnumerable<YodaToken> tokens,
+	public static YodaTokenByteCode Data(int lineNumber, int memoryLocation, IEnumerable<IToken> tokens,
 		IByteCodeGeneratorStrategy generatorStrategy)
 		=> new YodaTokenByteCode(lineNumber, memoryLocation, DirectiveType.Data, tokens, generatorStrategy);
 

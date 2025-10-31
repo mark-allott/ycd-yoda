@@ -31,7 +31,7 @@ public class Yoda
 	/// <summary>
 	/// Holds the definitions for constant values
 	/// </summary>
-	private Dictionary<string, YodaToken?> Symbols { get; } = new();
+	private Dictionary<string, IToken?> Symbols { get; } = new();
 
 	private readonly byte[] _bootFileData = new byte[256];
 
@@ -111,7 +111,7 @@ public class Yoda
 	}
 
 	/// <inheritdoc />
-	public IEnumerable<YodaTokenByteCode> CompileToByteCode(IEnumerable<YodaToken> tokens)
+	public IEnumerable<ITokenByteCode> CompileToByteCode(IEnumerable<IToken> tokens)
 	{
 		//	Ensure the tokens are converted to a list to prevent multiple enumerations over them.
 		//	Also making	sure they are all in the correct serial sequence
@@ -300,7 +300,7 @@ public class Yoda
 	/// <param name="tokens">The tokenised version of the sourcecode</param>
 	/// <returns>The intermediate stage of compilation, where the <see cref="YodaToken"/> elements have been transformed
 	/// into their <see cref="YodaTokenByteCode"/> equivalents</returns>
-	private List<YodaTokenByteCode> CompilePass1(List<YodaToken> tokens)
+	private List<ITokenByteCode> CompilePass1(List<YodaToken> tokens)
 	{
 		return CompileToByteCode(tokens)
 			.ToList();
@@ -346,7 +346,7 @@ public class Yoda
 	/// </summary>
 	/// <param name="tokens">The intermediate tokens for the source</param>
 	/// <exception cref="YodaByteCodeException"></exception>
-	private void CompilePass3(List<YodaTokenByteCode> tokens)
+	private void CompilePass3(List<ITokenByteCode> tokens)
 	{
 		//	Step 1 is to locate any needing updates...
 		var symbolsToUpdate = tokens
@@ -383,7 +383,7 @@ public class Yoda
 	/// <remarks>This final stage of the compile process iterates over the tokens, placing them in memory location order
 	/// and ensures that there are no overwriting areas and that the total length of the resultant bytecode would not
 	/// exceed 256 bytes</remarks>
-	private static List<YodaTokenByteCode> CompilePass4(List<YodaTokenByteCode> tokens)
+	private static List<ITokenByteCode> CompilePass4(List<ITokenByteCode> tokens)
 	{
 		//	Order the tokens by memory location
 		var orderedTokens = tokens
@@ -415,7 +415,7 @@ public class Yoda
 		File.WriteAllBytes(Path.Combine(DefaultFilePath, fileName), _bootFileData);
 	}
 
-	private byte GetDirectiveParameterValue(YodaToken token, DirectiveType directiveType)
+	private byte GetDirectiveParameterValue(IToken token, DirectiveType directiveType)
 	{
 		if (token is YodaNumericValueToken numericToken)
 			return (byte)numericToken.NumericValue;
@@ -425,7 +425,7 @@ public class Yoda
 			$"Invalid token type for [{directiveType}] parameter: {token.TokenType}");
 	}
 
-	private byte GetSymbolValue(YodaToken token, List<YodaToken>? chain = null)
+	private byte GetSymbolValue(IToken token, List<IToken>? chain = null)
 	{
 		ArgumentNullException.ThrowIfNull(token, nameof(token));
 		
@@ -453,7 +453,7 @@ public class Yoda
 		throw new TokeniserException(token.LineNumber, "Invalid token for symbol");
 	}
 
-	private DirectiveType HandleDirectiveChange(DirectiveType newDirective, List<YodaToken> tokens,
+	private DirectiveType HandleDirectiveChange(DirectiveType newDirective, List<IToken> tokens,
 		ref int instructionPosition, ref int dataPosition)
 	{
 		switch (newDirective)
@@ -489,7 +489,7 @@ public class Yoda
 		return newDirective;
 	}
 
-	private void SetSymbolValue(YodaToken[] tokens, int numericValue = 0)
+	private void SetSymbolValue(IToken[] tokens, int numericValue = 0)
 	{
 		//	Tokens passed in MUST be present and there MUST be either one or two present
 		ArgumentNullException.ThrowIfNull(tokens, nameof(tokens));

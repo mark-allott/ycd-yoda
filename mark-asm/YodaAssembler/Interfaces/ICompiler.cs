@@ -1,5 +1,3 @@
-using YodaAssembler.Records;
-
 namespace YodaAssembler.Interfaces;
 
 public interface ICompiler
@@ -20,10 +18,10 @@ public interface ICompiler
 	/// With the tokenised version of the source, represented as <paramref name="tokens"/>, convert to an intermediate stage that contains the tokens and bytecode representation for it.
 	/// </summary>
 	/// <param name="tokens">The tokenised version of the sourcecode</param>
-	/// <returns>An intermediate stage of compiled tokens, with details held in the <see cref="YodaTokenByteCode"/></returns>
+	/// <returns>An intermediate stage of compiled tokens, with details held in the <see cref="ITokenByteCode"/></returns>
 	/// <remarks>The intermediate stage is ready for assembly into the final bytecode, but is not yet fully sanitised by
 	/// the compiler. Elements within the output may result in overwriting of other elements. The <see cref="Compile"/>
 	/// methods will handle the checking of the elements to ensure that they are valid prior to writing the finalised
 	/// version of the bytecode, which will be correctly aligned etc.</remarks>
-	IEnumerable<YodaTokenByteCode> CompileToByteCode(IEnumerable<YodaToken> tokens);
+	IEnumerable<ITokenByteCode> CompileToByteCode(IEnumerable<IToken> tokens);
 }
