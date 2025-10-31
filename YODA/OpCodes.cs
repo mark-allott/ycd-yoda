@@ -10,11 +10,11 @@ public static class OpCode
 {
     // Misc (opcodes without operands)
     public const byte Halt = 0b0000_0000; // 00
-    public const byte Wait = 0b0000_0001; // 00
-    public const byte Ret = 0b0000_0011;  // 02
-    public const byte Nop = 0b0000_0100;  // 03
-    public const byte Sif = 0b0000_0101;  // 04
-    public const byte Cif = 0b0000_0110;  // 05
+    public const byte Wait = 0b0000_0001; // 01
+    public const byte Ret = 0b0000_0010;  // 02
+    public const byte Nop = 0b0000_0011;  // 03
+    public const byte Sif = 0b0000_0100;  // 04
+    public const byte Cif = 0b0000_0101;  // 05
 
     public const byte SaveToFileMMM = 0b0001_0000; //16
     public const byte SaveToFileMMI = 0b0001_0001; //17
