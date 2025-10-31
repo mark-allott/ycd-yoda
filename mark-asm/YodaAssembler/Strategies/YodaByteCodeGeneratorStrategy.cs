@@ -16,7 +16,7 @@ public class YodaByteCodeGeneratorStrategy
 	#region IByteCodeGeneratorStrategy implementation
 
 	/// <inheritdoc />
-	public byte?[] Generate(DirectiveType directiveType, IEnumerable<YodaToken> tokens)
+	public byte?[] Generate(DirectiveType directiveType, IEnumerable<IToken> tokens)
 	{
 		ArgumentNullException.ThrowIfNull(tokens);
 		var tokenList = tokens.ToList();
@@ -43,7 +43,7 @@ public class YodaByteCodeGeneratorStrategy
 	/// </summary>
 	/// <param name="parameters">The parameters for the command</param>
 	/// <returns>A byte mask to be applied to the base opCode</returns>
-	private byte GetCommandOffsetValue(IEnumerable<YodaToken> parameters)
+	private byte GetCommandOffsetValue(IEnumerable<IToken> parameters)
 	{
 		byte offset = 0;
 		foreach (var parameter in parameters)
@@ -64,7 +64,7 @@ public class YodaByteCodeGeneratorStrategy
 	/// <returns>The array of bytes that represent the value of the tokens</returns>
 	/// <exception cref="TokeniserException"></exception>
 	/// <remarks>Symbols are converted to null bytes for replacement elsewhere</remarks>
-	private byte?[] GetProgramByteCode(List<YodaToken> tokens)
+	private byte?[] GetProgramByteCode(List<IToken> tokens)
 	{
 		if (tokens[0] is not YodaCommandToken command)
 			throw new TokeniserException(LineNumber, $"Attempt to generate program bytecode without a command");
@@ -131,7 +131,7 @@ public class YodaByteCodeGeneratorStrategy
 	/// <param name="tokens">The tokens to be converted</param>
 	/// <returns>The array of bytes that represent the value of the tokens</returns>
 	/// <remarks>Symbols are converted to null bytes for replacement elsewhere</remarks>
-	private byte?[] GetDataByteCode(List<YodaToken> tokens)
+	private byte?[] GetDataByteCode(List<IToken> tokens)
 	{
 		var bytes = new List<byte?>();
 		foreach (var token in tokens)

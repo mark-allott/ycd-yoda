@@ -12,5 +12,5 @@ public interface IByteCodeGeneratorStrategy
 	/// <param name="tokens">The <see cref="YodaToken"/>, or derivative, tokens to be converted to their bytecode representation</param>
 	/// <returns>The array of bytes that represent the tokens</returns>
 	/// <remarks>If the <paramref name="tokens"/> contain any symbols, then the byte returned for it shall be null</remarks>
-	byte?[] Generate(DirectiveType directiveType, IEnumerable<YodaToken> tokens);
+	byte?[] Generate(DirectiveType directiveType, IEnumerable<IToken> tokens);
 }
