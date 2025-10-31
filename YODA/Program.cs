@@ -8,7 +8,7 @@ public static class Program
         if (args.Length > 0)
             folder = args[0];
 
-        var debug = (args.Length > 1 && args[1] == "--debug");
+        var debug = args.Any(s => s.Equals("--debug", StringComparison.InvariantCultureIgnoreCase));
         
         Console.WriteLine("Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module");
         Console.WriteLine($"Folder Path: {folder}\n" );
