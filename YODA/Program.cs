@@ -1,4 +1,6 @@
-﻿namespace SimpleInstructionMachine;
+﻿using SimpleInstructionMachine.VirtualProcessors;
+
+namespace SimpleInstructionMachine;
 
 public static class Program
 {
