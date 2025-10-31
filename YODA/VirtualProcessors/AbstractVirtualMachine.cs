@@ -1,6 +1,6 @@
 using SimpleInstructionMachine.Interfaces;
 
-namespace SimpleInstructionMachine;
+namespace SimpleInstructionMachine.VirtualProcessors;
 
 public abstract class AbstractVirtualMachine(bool debug)
 	: IVirtualMachine

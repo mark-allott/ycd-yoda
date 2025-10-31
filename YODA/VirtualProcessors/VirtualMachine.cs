@@ -2,7 +2,7 @@
 
 using System.Text;
 
-namespace SimpleInstructionMachine;
+namespace SimpleInstructionMachine.VirtualProcessors;
 
 public class VirtualMachine(bool debug)
 	: AbstractVirtualMachine(debug)
