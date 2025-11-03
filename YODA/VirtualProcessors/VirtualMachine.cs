@@ -13,11 +13,9 @@ public class VirtualMachine(bool debug)
 	private int _stackHeadPointer = KnownMemory.STACK_BOTTOM;
 	private bool _interruptsEnabled;
 
-	private string _folder = ".";
-
 	public override async Task Run(string folderPath)
 	{
-		_folder = folderPath;
+		Folder = folderPath;
 		await Boot();
 
 		var halted = false;
@@ -154,7 +152,7 @@ public class VirtualMachine(bool debug)
 		_stackHeadPointer = KnownMemory.STACK_BOTTOM;
 
 		// Load the contents of the boot file into memory
-		var filename = Path.Combine(_folder, "boot");
+		var filename = Path.Combine(Folder, "boot");
 		if (File.Exists(filename))
 		{
 			var fileContents = await File.ReadAllBytesAsync(filename);
@@ -170,17 +168,6 @@ public class VirtualMachine(bool debug)
 		{
 			ConsoleMessage("\nNo boot file found.");
 		}
-	}
-
-	private string FilenameFromFileNumber(byte fileNumber)
-	{
-		return fileNumber switch
-		{
-			< 8 => Path.Combine(_folder, $"{fileNumber}"),
-			< 16 => Path.Combine(_folder, $"{fileNumber}.txt"),
-			_ => throw new Exception(
-				$"Unknown file {fileNumber}.  Binary files are between 0 and 7.   Text files are between 8 and 15")
-		};
 	}
 
 	/// <summary>
