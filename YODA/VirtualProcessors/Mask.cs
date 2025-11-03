@@ -1,4 +1,4 @@
-namespace SimpleInstructionMachine;
+namespace SimpleInstructionMachine.VirtualProcessors;
 
 /// <summary>
 /// Bitmap mask to apply to opcodes.  For example all 8 opcodes

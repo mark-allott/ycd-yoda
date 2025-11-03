@@ -1,4 +1,4 @@
-namespace SimpleInstructionMachine;
+namespace SimpleInstructionMachine.VirtualProcessors;
 
 public static class KnownMemory
 {

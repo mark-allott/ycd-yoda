@@ -1,4 +1,4 @@
-namespace SimpleInstructionMachine;
+namespace SimpleInstructionMachine.VirtualProcessors;
 
 //1 means immediate rather than memory (0)
 
