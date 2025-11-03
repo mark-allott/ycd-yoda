@@ -2,7 +2,7 @@ using SimpleInstructionMachine.Interfaces;
 
 namespace SimpleInstructionMachine.VirtualProcessors;
 
-public abstract class AbstractVirtualMachine(bool debug)
+public abstract class AbstractVirtualMachine(bool isDebug)
 	: IVirtualMachine
 {
 	#region IVirtualMachine Members
@@ -13,7 +13,7 @@ public abstract class AbstractVirtualMachine(bool debug)
 
 	#region Fields
 
-	protected bool Debug { get; private set; } = debug;
+	protected bool IsDebug { get; private set; } = isDebug;
 	protected string Folder = ".";
 
 	#endregion
@@ -27,7 +27,7 @@ public abstract class AbstractVirtualMachine(bool debug)
 
 	public void DebugMessage(string message)
 	{
-		if (!Debug)
+		if (!IsDebug)
 			return;
 		ConsoleMessage(message);
 	}

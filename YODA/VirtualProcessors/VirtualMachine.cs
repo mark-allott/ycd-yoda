@@ -4,8 +4,8 @@ using System.Text;
 
 namespace SimpleInstructionMachine.VirtualProcessors;
 
-public class VirtualMachine(bool debug)
-	: AbstractVirtualMachine(debug)
+public class VirtualMachine(bool isDebug)
+	: AbstractVirtualMachine(isDebug)
 {
 	private readonly byte[] _memory = new byte[1 + byte.MaxValue];
 
