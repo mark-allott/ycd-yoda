@@ -14,6 +14,7 @@ public abstract class AbstractVirtualMachine(bool debug)
 	#region Fields
 
 	protected bool Debug { get; private set; } = debug;
+	protected string Folder = ".";
 
 	#endregion
 
@@ -34,6 +35,17 @@ public abstract class AbstractVirtualMachine(bool debug)
 	public async Task ErrorMessage(string message)
 	{
 		await Console.Error.WriteLineAsync(message);
+	}
+
+	protected string FilenameFromFileNumber(byte fileNumber)
+	{
+		return fileNumber switch
+		{
+			< 8 => Path.Combine(Folder, $"{fileNumber}"),
+			< 16 => Path.Combine(Folder, $"{fileNumber}.txt"),
+			_ => throw new Exception(
+				$"Unknown file {fileNumber}.  Binary files are between 0 and 7.   Text files are between 8 and 15")
+		};
 	}
 
 	#endregion
