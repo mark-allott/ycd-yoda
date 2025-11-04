@@ -20,19 +20,24 @@ public abstract class AbstractVirtualMachine(bool isDebug)
 
 	#region Common Methods
 
-	public void ConsoleMessage(string message)
+	protected void ConsoleMessage(string message)
 	{
 		Console.WriteLine(message);
 	}
 
-	public void DebugMessage(string message)
+	protected void DebugMessage(string message)
 	{
 		if (!IsDebug)
 			return;
 		ConsoleMessage(message);
 	}
 
-	public async Task ErrorMessage(string message)
+	protected void ErrorMessage(string message)
+	{
+		Console.Error.WriteLineAsync(message);
+	}
+
+	protected async Task ErrorMessageAsync(string message)
 	{
 		await Console.Error.WriteLineAsync(message);
 	}

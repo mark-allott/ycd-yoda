@@ -109,7 +109,7 @@ public class VirtualMachine(bool isDebug)
 					.AppendLine($"\n{e.Message}")
 					.AppendLine($"Instruction Pointer: {_instructionPointer:x4}")
 					.AppendLine($"Opcode: {opCode:x2}\n");
-				await ErrorMessage(sb.ToString());
+				await ErrorMessageAsync(sb.ToString());
 
 				// Dump as bytes
 				await File.WriteAllBytesAsync("crash_dump", _memory);
@@ -121,7 +121,7 @@ public class VirtualMachine(bool isDebug)
 
 				await textFile.FlushAsync();
 
-				await ErrorMessage("A crash dump containing all the memory has been written to : crash_dump and crash_dump.txt");
+				await ErrorMessageAsync("A crash dump containing all the memory has been written to : crash_dump and crash_dump.txt");
 				return;
 			}
 		}
