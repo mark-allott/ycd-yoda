@@ -20,6 +20,6 @@ public interface IVirtualMachine
 	/// Performs execution of the bytecode loaded into the system memory
 	/// </summary>
 	/// <returns></returns>
-	/// <remarks>Execution starts at location 0 in bytecode memory and continues until and error occurs, or the program terminates normally</remarks>
+	/// <remarks>Execution starts at location 0 in bytecode memory and continues until an error occurs, or the program terminates normally</remarks>
 	Task Execute();
 }
