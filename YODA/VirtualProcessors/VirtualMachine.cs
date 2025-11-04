@@ -1,23 +1,17 @@
 // ReSharper disable InconsistentNaming
 
-using System.Text;
-
 namespace SimpleInstructionMachine.VirtualProcessors;
 
 public class VirtualMachine(bool isDebug)
 	: AbstractVirtualMachine(isDebug)
 {
-	private readonly byte[] _memory = new byte[1 + byte.MaxValue];
-
-	private int _instructionPointer = KnownMemory.APP_DATA_BOTTOM;
 	private int _stackHeadPointer = KnownMemory.STACK_BOTTOM;
 	private bool _interruptsEnabled;
 
-	public override async Task Run(string folderPath)
+	public override async Task Execute()
 	{
-		Folder = folderPath;
-		await Boot();
-
+		InstructionPointer = KnownMemory.APP_DATA_BOTTOM;
+		
 		var halted = false;
 		while (!halted)
 		{
@@ -25,113 +19,79 @@ public class VirtualMachine(bool isDebug)
 			if (_interruptsEnabled && Console.KeyAvailable)
 			{
 				var key = Console.ReadKey();
-				if (key.Key == ConsoleKey.LeftArrow)
+				if (key.Key is ConsoleKey.LeftArrow or ConsoleKey.RightArrow)
 				{
-					PushToStack((byte)_instructionPointer);
-					_instructionPointer = _memory[KnownMemory.IVT_LEFT_ARROW];
-				}
-				else if (key.Key == ConsoleKey.RightArrow)
-				{
-					PushToStack((byte)_instructionPointer);
-					_instructionPointer = _memory[KnownMemory.IVT_RIGHT_ARROW];
+					PushToStack((byte)InstructionPointer);
+					InstructionPointer = key.Key is ConsoleKey.LeftArrow
+						? ByteCode[KnownMemory.IVT_LEFT_ARROW]
+						: ByteCode[KnownMemory.IVT_RIGHT_ARROW];
 				}
 			}
 
-			var opCode = _memory[_instructionPointer];
-			try
+			var opCode = ByteCode[InstructionPointer];
+			switch (opCode >> 4)
 			{
-				switch (opCode >> 4)
-				{
-					case Mask.Misc:
-						switch (opCode)
-						{
-							case OpCode.Halt:
-							{
-								halted = true;
-								continue;
-							}
-							case OpCode.Wait:
-							{
-								await Wait();
-								continue;
-							}
-							case OpCode.Nop:
-								Nop();
-								continue;
-							case OpCode.Sif:
-								Sif();
-								continue;
-							case OpCode.Cif:
-								Cif();
-								continue;
-							case OpCode.Ret:
-							{
-								Ret();
-								continue;
-							}
-							default:
-								throw new Exception("Unknown command " + opCode);
-						}
+				case Mask.Misc:
+					switch (opCode)
+					{
+						case OpCode.Halt:
+							halted = true;
+							break;
+						case OpCode.Wait:
+							await Wait();
+							break;
+						case OpCode.Nop:
+							Nop();
+							break;
+						case OpCode.Sif:
+							Sif();
+							break;
+						case OpCode.Cif:
+							Cif();
+							break;
+						case OpCode.Ret:
+							Ret();
+							break;
+						default:
+							throw new Exception($"Unknown command: 0x{opCode:x2}");
+					}
+					break;
 
-					case Mask.SaveToFile:
-						await SaveToFile(opCode);
-						continue;
-					case Mask.LoadFromFile:
-						await LoadFromFile(opCode);
-						continue;
-					case Mask.Write:
-						Write(opCode);
-						continue;
-					case Mask.Add:
-						Add(opCode);
-						continue;
-					case Mask.Sub:
-						throw new Exception("Due to lack of time this method has not been implemented");
-					case Mask.Inc:
-						Inc(opCode);
-						continue;
-					case Mask.Dec:
-						Dec(opCode);
-						continue;
-					case Mask.JumpIfZero:
-						JumpIfZero(opCode);
-						continue;
-					case Mask.JumpWithReturn:
-						JumpWithReturn(opCode);
-						continue;
-					default:
-						throw new Exception("Unknown command " + opCode);
-				}
-			}
-			catch (Exception e)
-			{
-				var sb = new StringBuilder("Your program has crashed! Things aren't looking too good for the space craft.")
-					.AppendLine($"\n{e.Message}")
-					.AppendLine($"Instruction Pointer: {_instructionPointer:x4}")
-					.AppendLine($"Opcode: {opCode:x2}\n");
-				await ErrorMessageAsync(sb.ToString());
-
-				// Dump as bytes
-				await File.WriteAllBytesAsync("crash_dump", _memory);
-
-				// Dump as text
-				await using var textFile = File.CreateText("crash_dump.txt");
-				for (var i = 0; i < _memory.Length; i++)
-					await textFile.WriteLineAsync($"{i:X2}   {_memory[i]}{(i == _instructionPointer ? "    <---- INSTRUCTION POINTER" : "")}");
-
-				await textFile.FlushAsync();
-
-				await ErrorMessageAsync("A crash dump containing all the memory has been written to : crash_dump and crash_dump.txt");
-				return;
+				case Mask.SaveToFile:
+					await SaveToFile(opCode);
+					break;
+				case Mask.LoadFromFile:
+					await LoadFromFile(opCode);
+					break;
+				case Mask.Write:
+					Write(opCode);
+					break;
+				case Mask.Add:
+					Add(opCode);
+					break;
+				case Mask.Sub:
+					throw new Exception("Due to lack of time this method has not been implemented");
+				case Mask.Inc:
+					Inc(opCode);
+					break;
+				case Mask.Dec:
+					Dec(opCode);
+					break;
+				case Mask.JumpIfZero:
+					JumpIfZero(opCode);
+					break;
+				case Mask.JumpWithReturn:
+					JumpWithReturn(opCode);
+					break;
+				default:
+					throw new Exception($"Unknown command: 0x{opCode:x2}");
 			}
 		}
-
-		ConsoleMessage("\n\nProgram completed successfully");
 	}
 
 	private void PushToStack(byte value)
 	{
-		_memory[_stackHeadPointer--] = value;
+		ByteCode[_stackHeadPointer--] = value;
 	}
 
 	private byte PopFromStack()
@@ -140,34 +100,7 @@ public class VirtualMachine(bool isDebug)
 		if (_stackHeadPointer > KnownMemory.STACK_BOTTOM)
 			throw new Exception("Stack underflow");
 
-		return _memory[_stackHeadPointer];
-	}
-
-	private async Task Boot()
-	{
-		// Reset memory and pointers
-		Array.Fill(_memory, (byte)0);
-		_instructionPointer = KnownMemory.APP_DATA_BOTTOM;
-		_interruptsEnabled = false;
-		_stackHeadPointer = KnownMemory.STACK_BOTTOM;
-
-		// Load the contents of the boot file into memory
-		var filename = Path.Combine(Folder, "boot");
-		if (File.Exists(filename))
-		{
-			var fileContents = await File.ReadAllBytesAsync(filename);
-			if (fileContents.Length > _memory.Length)
-				throw new Exception(
-					$"The boot file is too large. It is {fileContents.Length} bytes long,  which exceeds the maximum allowed of {_memory.Length} bytes");
-
-			fileContents.CopyTo(_memory, 0);
-
-			ConsoleMessage($"\nMemory has been initialised using the boot file ({filename}).");
-		}
-		else
-		{
-			ConsoleMessage("\nNo boot file found.");
-		}
+		return ByteCode[_stackHeadPointer];
 	}
 
 	/// <summary>
@@ -175,16 +108,16 @@ public class VirtualMachine(bool isDebug)
 	/// </summary>
 	private async Task SaveToFile(int opCode)
 	{
-		var fileNumber = Read(_instructionPointer + 1, opCode, 2);
-		var sourceLocation = Read(_instructionPointer + 2, opCode, 1);
-		var length = Read(_instructionPointer + 3, opCode, 0);
+		var fileNumber = Read(InstructionPointer + 1, opCode, 2);
+		var sourceLocation = Read(InstructionPointer + 2, opCode, 1);
+		var length = Read(InstructionPointer + 3, opCode, 0);
 
-		DebugMessage($"{_instructionPointer:x4} SaveToFile:: Writing {length} bytes starting at {sourceLocation:x4} to file {fileNumber}.");
+		DebugMessageWithCallerInfo($"Writing {length} bytes starting at {sourceLocation:x4} to file {fileNumber}.");
 
 		await File.WriteAllBytesAsync(FilenameFromFileNumber(fileNumber),
-			_memory[sourceLocation..(sourceLocation + length)]);
+			ByteCode[sourceLocation..(sourceLocation + length)]);
 
-		_instructionPointer += 4;
+		InstructionPointer += 4;
 	}
 
 	/// <summary>
@@ -192,17 +125,16 @@ public class VirtualMachine(bool isDebug)
 	/// </summary>
 	private async Task LoadFromFile(int opCode)
 	{
-		var fileNumber = Read(_instructionPointer + 1, opCode, 1);
-		var targetLocation = Read(_instructionPointer + 2, opCode, 0);
+		var fileNumber = Read(InstructionPointer + 1, opCode, 1);
+		var targetLocation = Read(InstructionPointer + 2, opCode, 0);
 
 		var fileContents = await File.ReadAllBytesAsync(FilenameFromFileNumber(fileNumber));
-		if (fileContents.Length + targetLocation > _memory.Length)
+		if (fileContents.Length + targetLocation > ByteCode.Length)
 			throw new Exception("File too large");
-		fileContents.CopyTo(_memory, targetLocation);
+		fileContents.CopyTo(ByteCode, targetLocation);
 
-		DebugMessage($"{_instructionPointer:x4} LoadFromFile:: Reading from file {fileNumber} into {targetLocation:x4}.");
-
-		_instructionPointer += 3;
+		DebugMessageWithCallerInfo($"Reading from file {fileNumber} into {targetLocation:x4}.");
+		InstructionPointer += 3;
 	}
 
 	/// <summary>
@@ -210,44 +142,12 @@ public class VirtualMachine(bool isDebug)
 	/// </summary>
 	private void Write(int opCode)
 	{
-		var location = Read(_instructionPointer + 1, opCode, 1);
-		var value = Read(_instructionPointer + 2, opCode, 0);
+		var location = Read(InstructionPointer + 1, opCode, 1);
+		var value = Read(InstructionPointer + 2, opCode, 0);
 
-		DebugMessage($"{_instructionPointer:x4} Write::  {value} into {location:X2}");
-
-		UpdateScreenIfRequired(location, value);
-
-		_memory[location] = value;
-		_instructionPointer += 3;
-	}
-
-	private static readonly string LcdDisplayOuter = "---------------------";
-	private void UpdateScreenIfRequired(byte location, byte value)
-	{
-		char ToChar(byte b)
-		{
-			if (b == 0x00)
-				return ' ';
-			else
-				return (char)b;
-		}
-
-		//	If not screen location, do not do anything
-		if (location != KnownMemory.ControlFlags)
-			return;
-
-		//	If already set, or the value is being reset, return
-		if ((_memory[location] & 1) == 1 || (value & 1) == 0)
-			return;
-		
-		//bit 0 has been set, refresh the LCD display
-		var sb = new StringBuilder()
-			.AppendLine(LcdDisplayOuter)
-			.Append($"| {ToChar(_memory[KnownMemory.LCD_0])} | {ToChar(_memory[KnownMemory.LCD_1])} ")
-			.Append($"| {ToChar(_memory[KnownMemory.LCD_2])} | {ToChar(_memory[KnownMemory.LCD_3])} ")
-			.AppendLine($"| {ToChar(_memory[KnownMemory.LCD_4])} |")
-			.AppendLine(LcdDisplayOuter);
-		ConsoleMessage(sb.ToString());
+		DebugMessageWithCallerInfo($"{value} into {location:X2}");
+		WriteToMemory(location, value);
+		InstructionPointer += 3;
 	}
 
 	/// <summary>
@@ -255,13 +155,13 @@ public class VirtualMachine(bool isDebug)
 	/// </summary>
 	private void Add(int opCode)
 	{
-		var lhs = Read(_instructionPointer + 1, opCode, 2);
-		var rhs = Read(_instructionPointer + 2, opCode, 1);
-		var location = Read(_instructionPointer + 3, opCode, 0);
+		var lhs = Read(InstructionPointer + 1, opCode, 2);
+		var rhs = Read(InstructionPointer + 2, opCode, 1);
+		var location = Read(InstructionPointer + 3, opCode, 0);
 
-		DebugMessage($"{_instructionPointer:x4} Add::  {lhs} + {rhs} = {lhs + rhs} ==> {location:x4}");
-		_memory[location] = (byte)(lhs + rhs); // Can overflow
-		_instructionPointer += 4;
+		DebugMessageWithCallerInfo($"{lhs} + {rhs} = {lhs + rhs} ==> {location:x4}");
+		WriteToMemory(location, lhs + rhs); // Can overflow
+		InstructionPointer += 4;
 	}
 
 	/// <summary>
@@ -269,12 +169,11 @@ public class VirtualMachine(bool isDebug)
 	/// </summary>
 	private void Inc(int opCode)
 	{
-		var location = Read(_instructionPointer + 1, opCode, 0);
-
-		DebugMessage($"{_instructionPointer:x4} Inc::  Increasing value in {location:x4} from {_memory[location]} to {(_memory[location]) + 1}");
-
-		_memory[location]++;
-		_instructionPointer += 2;
+		var location = Read(InstructionPointer + 1, opCode, 0);
+		var newValue = (byte)(1 + ByteCode[location]);
+		DebugMessageWithCallerInfo($"Increasing value in {location:x4} from {ByteCode[location]} to {newValue}");
+		WriteToMemory(location, newValue);
+		InstructionPointer += 2;
 	}
 
 	/// <summary>
@@ -282,12 +181,11 @@ public class VirtualMachine(bool isDebug)
 	/// </summary>
 	private void Dec(int opCode)
 	{
-		var location = Read(_instructionPointer + 1, opCode, 0);
-
-		DebugMessage($"{_instructionPointer:x4} Dec::  Decreasing value in {location:x4} from {_memory[location]} to {(_memory[location]) - 1}");
-
-		_memory[location]--;
-		_instructionPointer += 2;
+		var location = Read(InstructionPointer + 1, opCode, 0);
+		var newValue = (byte)(ByteCode[location] - 1);
+		DebugMessageWithCallerInfo($"Decreasing value in {location:x4} from {ByteCode[location]} to {newValue}");
+		WriteToMemory(location, newValue);
+		InstructionPointer += 2;
 	}
 
 	/// <summary>
@@ -295,8 +193,8 @@ public class VirtualMachine(bool isDebug)
 	/// </summary>
 	private void Nop()
 	{
-		DebugMessage($"{_instructionPointer:x4} Nop::");
-		_instructionPointer++;
+		DebugMessageWithCallerInfo("");
+		InstructionPointer++;
 	}
 
 	/// <summary>
@@ -304,9 +202,9 @@ public class VirtualMachine(bool isDebug)
 	/// </summary>
 	private void Sif()
 	{
-		DebugMessage($"{_instructionPointer:x4} Sif:: Was previously {_interruptsEnabled}");
+		DebugMessageWithCallerInfo($"Was previously {_interruptsEnabled}");
 		_interruptsEnabled = true;
-		_instructionPointer++;
+		InstructionPointer++;
 	}
 
 	/// <summary>
@@ -314,25 +212,24 @@ public class VirtualMachine(bool isDebug)
 	/// </summary>
 	private void Cif()
 	{
-		DebugMessage($"{_instructionPointer:x4} Cif:: Was previously {_interruptsEnabled}");
+		DebugMessageWithCallerInfo($"Was previously {_interruptsEnabled}");
 		_interruptsEnabled = false;
-		_instructionPointer++;
+		InstructionPointer++;
 	}
 
 	private async Task Wait()
 	{
-		DebugMessage($"{_instructionPointer:x4} Wait::");
+		DebugMessageWithCallerInfo("");
+		DebugMessage($"{InstructionPointer:x4} Wait::");
 		await Task.Delay(100);
-		_instructionPointer++;
+		InstructionPointer++;
 	}
-
 
 	private void Ret()
 	{
 		var gotoAddress = PopFromStack();
-
-		DebugMessage($"{_instructionPointer:x4} Ret:: {_instructionPointer:x4} to {gotoAddress:x4}");
-		_instructionPointer = gotoAddress;
+		DebugMessageWithCallerInfo($"{InstructionPointer:x4} to {gotoAddress:x4}");
+		InstructionPointer = gotoAddress;
 	}
 
 	/// <summary>
@@ -340,16 +237,13 @@ public class VirtualMachine(bool isDebug)
 	/// </summary>
 	private void JumpIfZero(int opCode)
 	{
-		var addressToCheck = Read(_instructionPointer + 1, opCode, 1);
-		var locationToJumpTo = Read(_instructionPointer + 2, opCode, 0);
-		var valueToCheck = _memory[addressToCheck];
-
-		 DebugMessage($"{_instructionPointer:x4} JumpIfZero:: - jump to {locationToJumpTo:X2} if {valueToCheck} is 0");
-
-		if (valueToCheck == 0)
-			_instructionPointer = locationToJumpTo;
-		else
-			_instructionPointer += 3;
+		var addressToCheck = Read(InstructionPointer + 1, opCode, 1);
+		var locationToJumpTo = Read(InstructionPointer + 2, opCode, 0);
+		var valueToCheck = ByteCode[addressToCheck];
+		DebugMessageWithCallerInfo($"jump to {locationToJumpTo:X2} if {valueToCheck} is 0 [{valueToCheck == 0}]");
+		InstructionPointer = (valueToCheck == 0)
+			? locationToJumpTo
+			: InstructionPointer += 3;
 	}
 
 	/// <summary>
@@ -357,10 +251,10 @@ public class VirtualMachine(bool isDebug)
 	/// </summary>
 	private void JumpWithReturn(int opCode)
 	{
-		var locationToJumpTo = Read(_instructionPointer + 1, opCode, 0);
-		DebugMessage($"{_instructionPointer:x4} JumpWithReturn:: - jump to {locationToJumpTo:X2}");
-		PushToStack((byte)(_instructionPointer + 2));
-		_instructionPointer = locationToJumpTo;
+		var locationToJumpTo = Read(InstructionPointer + 1, opCode, 0);
+		DebugMessageWithCallerInfo($"jump to {locationToJumpTo:X2}");
+		PushToStack((byte)(InstructionPointer + 2));
+		InstructionPointer = locationToJumpTo;
 	}
 
 	private byte Read(int location, int opCode, int mask)
@@ -369,22 +263,18 @@ public class VirtualMachine(bool isDebug)
 		var isSet = (((opCode & 0b0000_1111) >> mask) & 1) == 1;
 		// Console.WriteLine($"{opCode:b8} {(opCode & 0b0000_1111):b8} mask {mask} {(((opCode & 0b0000_1111) >> mask) & 1 ):b8} {isSet} ");
 
-		if (location >= _memory.Length)
+		if (location >= ByteCode.Length)
 			throw new Exception("Illegal memory location " + location);
 
 		if (isSet)
 		{
 			// Console.WriteLine($"{opCode:b8}, {mask}, {_memory[location]:x8}");  
-			return _memory[location];
+			return ByteCode[location];
 		}
 
-		var reference = _memory[location];
-		if (reference >= _memory.Length)
+		var reference = ByteCode[location];
+		if (reference >= ByteCode.Length)
 			throw new Exception("Illegal de-referenced memory location " + location);
-
-		// Console.WriteLine($"{opCode:b8}, {mask}, {reference:x8}, {_memory[reference]}");
-
-
-		return _memory[reference];
+		return ByteCode[reference];
 	}
 }
