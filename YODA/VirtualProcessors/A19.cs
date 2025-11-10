@@ -31,8 +31,8 @@ public class A19(bool isDebug)
 
 	#region Fields
 
-	private int _stackPointer = KnownMemory.STACK_BOTTOM;
-	private bool _interruptsEnabled;
+	protected int _stackPointer = KnownMemory.STACK_BOTTOM;
+	protected bool _interruptsEnabled;
 
 	#endregion
 
