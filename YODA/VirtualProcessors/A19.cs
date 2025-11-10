@@ -220,12 +220,13 @@ public class A19(bool isDebug)
 	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	private Register GetOperandRegister(int value)
 	{
-		return (value & 0x03) switch
+		var operand = (value & 0x18) >> 3;
+		return (operand) switch
 		{
 			0 => Register.A,
 			1 => Register.B,
 			2 => Register.C,
-			3 => Register.IndirectN,
+			3 => Register.N,
 			_ => throw new ArgumentOutOfRangeException()
 		};
 	}
