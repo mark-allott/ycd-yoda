@@ -447,7 +447,7 @@ public class A19(bool isDebug)
 		var param1 = GetOperandRegister(OpCode);
 		var param2 = GetParameterRegister(OpCode);
 		var value = GetRegisterValue(param2);
-		DebugMessageWithCallerInfo($"{param1}, {param2} => {param1}, {value:0x2}");
+		DebugMessageWithCallerInfo($"{param1}, {param2} => {param1}, {value:x2}");
 
 		switch (param1)
 		{
