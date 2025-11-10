@@ -350,7 +350,7 @@ public class A19(bool isDebug)
 	private int DisableInterrupt()
 	{
 		_interruptsEnabled = false;
-		return InstructionPointer++;
+		return InstructionPointer + 1;
 	}
 
 	/// <summary>
@@ -359,7 +359,7 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int Nop()
 	{
-		return InstructionPointer++;
+		return InstructionPointer + 1;
 	}
 
 	/// <summary>
@@ -369,7 +369,7 @@ public class A19(bool isDebug)
 	private async Task<int> Suspend()
 	{
 		await Task.Delay(100);
-		return InstructionPointer++;
+		return InstructionPointer + 1;
 	}
 
 	/// <summary>
@@ -379,7 +379,7 @@ public class A19(bool isDebug)
 	private int EnableInterrupt()
 	{
 		_interruptsEnabled = true;
-		return InstructionPointer++;
+		return InstructionPointer + 1;
 	}
 
 	/// <summary>
