@@ -198,10 +198,10 @@ public abstract class AbstractVirtualMachine
 		ArgumentOutOfRangeException.ThrowIfGreaterThan(location, ByteCode.Length, nameof(location));
 
 		var byteValue = (byte)value;
-		if (location != KnownMemory.ControlFlags || 
-		    (ByteCode[location] & 1) == 1 || (value & 1) == 0)
-			return ByteCode[location] = byteValue;
-		UpdateScreen();
+		if (location == KnownMemory.ControlFlags && 
+		    (ByteCode[location] & 1) == 0 && 
+		    (value & 1) == 1)
+			UpdateScreen();
 		return ByteCode[location] = byteValue;
 	}
 
@@ -225,7 +225,7 @@ public abstract class AbstractVirtualMachine
 		{
 			return value switch
 			{
-				>= 32 and <= 255 => (char)value,
+				>= 32 => (char)value,
 				_ => '?'
 			};
 		}
