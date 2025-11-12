@@ -375,6 +375,7 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int Nop()
 	{
+		DebugMessageWithCallerInfo("");
 		return InstructionPointer + 1;
 	}
 
@@ -384,6 +385,7 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private async Task<int> Suspend()
 	{
+		DebugMessageWithCallerInfo("");
 		await Task.Delay(100);
 		return InstructionPointer + 1;
 	}
@@ -426,7 +428,7 @@ public class A19(bool isDebug)
 
 		//	When updating, the "file" might overwrite the screen area, so store the old flag value before it may be changed
 		var oldControlFlagValue = ByteCode[KnownMemory.ControlFlags];
-		DebugMessageWithCallerInfo($"Loading file {A} into location {param2} [{location:0x2}]");
+		DebugMessageWithCallerInfo($"Loading file '{fileName}' into location {param2} [{location:0x2}]");
 		fileContents.CopyTo(ByteCode, location);
 
 		//	Grab the new flag value, compare with the old and if set, force a screen update
@@ -448,6 +450,7 @@ public class A19(bool isDebug)
 		var nextIp = GetNewInstructionPointer(param2);
 		var length = ByteCode[nextIp + 1];
 
+		DebugMessageWithCallerInfo($"'{fileName}' from location {param2} [{location:0x2}], length {length:x2}");
 		await File.WriteAllBytesAsync(fileName, ByteCode[location..(location + length)]);
 		return 1 + nextIp;
 	}
@@ -501,7 +504,7 @@ public class A19(bool isDebug)
 		//	Result allows for overflow (flags can be set for this)
 		var value = SetValueAndFlags(param1, lhs + rhs);
 
-		DebugMessageWithCallerInfo($"{param1}, {param2} => {param1} = {value:0x2}");
+		DebugMessageWithCallerInfo($"{param1} + {param2} => {param1} = {value:0x2}");
 		return GetNewInstructionPointer(param2);
 	}
 
@@ -518,7 +521,7 @@ public class A19(bool isDebug)
 		var rhs = GetRegisterValue(param2);
 		//	Result allows for overflow (flags can be set for this)
 		var value = SetValueAndFlags(param1, lhs - rhs);
-		DebugMessageWithCallerInfo($"{param1}, {param2} => {param1}, {value:0x2}");
+		DebugMessageWithCallerInfo($"{param1} - {param2} => {param1}, {value:0x2}");
 		return GetNewInstructionPointer(param2);
 	}
 
@@ -529,13 +532,12 @@ public class A19(bool isDebug)
 	private int And()
 	{
 		var param2 = GetParameterRegister(OpCode);
-		//	get left and right side values
-		var lhs = GetRegisterValue(Register.A);
+		//	get right side value
 		var rhs = GetRegisterValue(param2);
 
-		var result = lhs & rhs;
-		var value = SetValueAndFlags(Register.A, result);
-		DebugMessageWithCallerInfo($"{param2} => {Register.A} = {value:0x2}");
+		//	LHS is always A
+		var value = SetValueAndFlags(Register.A, A & rhs);
+		DebugMessageWithCallerInfo($"{param2} => {Register.A} = {value:0x2}, Flags = {Flags}");
 		return GetNewInstructionPointer(param2);
 	}
 
@@ -546,11 +548,10 @@ public class A19(bool isDebug)
 	private int Or()
 	{
 		var param2 = GetParameterRegister(OpCode);
-		//	get left and right side values
-		var lhs = GetRegisterValue(Register.A);
+		//	get right side value
 		var rhs = GetRegisterValue(param2);
-		var value = SetValueAndFlags(Register.A, lhs | rhs);
-		DebugMessageWithCallerInfo($"{param2} => {Register.A} = {value:0x2}");
+		var value = SetValueAndFlags(Register.A, A | rhs);
+		DebugMessageWithCallerInfo($"{param2} => {Register.A} = {value:0x2}, Flags = {Flags}");
 		return GetNewInstructionPointer(param2);
 	}
 
@@ -562,10 +563,9 @@ public class A19(bool isDebug)
 	{
 		var param2 = GetParameterRegister(OpCode);
 		//	get left and right side values
-		var lhs = GetRegisterValue(Register.A);
 		var rhs = GetRegisterValue(param2);
-		var value = SetValueAndFlags(Register.A, lhs ^ rhs);
-		DebugMessageWithCallerInfo($"{param2} => {Register.A} = {value:0x2}");
+		var value = SetValueAndFlags(Register.A, A ^ rhs);
+		DebugMessageWithCallerInfo($"{param2} => {Register.A} = {value:0x2}, Flags = {Flags}");
 		return GetNewInstructionPointer(param2);
 	}
 
@@ -579,11 +579,10 @@ public class A19(bool isDebug)
 	private int Compare()
 	{
 		var param2 = GetParameterRegister(OpCode);
-		//	get left and right side values
-		var lhs = GetRegisterValue(Register.A);
+		//	get right side value
 		var rhs = GetRegisterValue(param2);
-		var value = SetFlagsFromValue(Register.A, lhs - rhs);
-		DebugMessageWithCallerInfo($"{param2} => {Register.A} = {value:0x2}");
+		var value = SetFlagsFromValue(Register.A, A - rhs);
+		DebugMessageWithCallerInfo($"{param2} => {Register.A} = {value:0x2}, Flags = {Flags}");
 		return GetNewInstructionPointer(param2);
 	}
 
@@ -596,7 +595,7 @@ public class A19(bool isDebug)
 		var incRegister = GetParameterRegister(OpCode);
 		var registerValue = GetRegisterValue(incRegister);
 		var value = SetValueAndFlags(incRegister, registerValue + 1);
-		DebugMessageWithCallerInfo($"{incRegister} => {incRegister} = {value:0x2}");
+		DebugMessageWithCallerInfo($"{incRegister} => {incRegister} = {value:x2}, Flags = {Flags}");
 		return GetNewInstructionPointer(incRegister);
 	}
 
@@ -609,7 +608,7 @@ public class A19(bool isDebug)
 		var decRegister = GetParameterRegister(OpCode);
 		var registerValue = GetRegisterValue(decRegister);
 		var value = SetValueAndFlags(decRegister, registerValue - 1);
-		DebugMessageWithCallerInfo($"{decRegister} => {decRegister} = {value:0x2}");
+		DebugMessageWithCallerInfo($"{decRegister} => {decRegister} = {value:x2}, Flags = {Flags}");
 		return GetNewInstructionPointer(decRegister);
 	}
 
@@ -631,6 +630,7 @@ public class A19(bool isDebug)
 	/// </summary>
 	/// <returns>The next instruction location</returns>
 	/// <exception cref="StackOverflowException"></exception>
+	/// <remarks>If this were a "security CPU", popping from the stack would overwrite the old area with zero to avoid data leaks</remarks>
 	private int Pop()
 	{
 		if (StackPointer == KnownMemory.STACK_BOTTOM)
@@ -666,7 +666,7 @@ public class A19(bool isDebug)
 			nextIp = Data1;
 		}
 
-		DebugMessageWithCallerInfo($"{(controlFlag != CpuFlags.None ? $"{controlFlag}" : "")} => {(controlFlag != CpuFlags.None ? $"{Flags.HasFlag(controlFlag)}" : "")} [IP:{InstructionPointer:x4}] [SP:{StackPointer:x4}]");
+		DebugMessageWithCallerInfo($"{(controlFlag != CpuFlags.None ? $"{controlFlag}" : "")} => {(controlFlag != CpuFlags.None ? $"{Flags.HasFlag(controlFlag)}" : "")} [IP:{nextIp:x4}] [SP:{StackPointer:x4}]");
 		return nextIp;
 	}
 
@@ -683,9 +683,12 @@ public class A19(bool isDebug)
 	private int Jump(CpuFlags controlFlag)
 	{
 		//	If a direct jump, or flags match, jump to desired address; otherwise next instruction along
-		return (controlFlag == CpuFlags.None || Flags.HasFlag(controlFlag))
+		var nextIp = controlFlag == CpuFlags.None || Flags.HasFlag(controlFlag)
 			? Data1
 			: InstructionPointer + 2;
+
+		DebugMessageWithCallerInfo($"{(controlFlag != CpuFlags.None ? $"{controlFlag}" : "")} => {(controlFlag != CpuFlags.None ? $"{Flags.HasFlag(controlFlag)}" : "")} [IP:{nextIp:x4}]");
+		return nextIp;
 	}
 
 	/// <summary>
@@ -701,9 +704,12 @@ public class A19(bool isDebug)
 	private int JumpRelative(CpuFlags controlFlag)
 	{
 		//	If a jump, or flags match, jump to desired address; otherwise next instruction along
-		return (controlFlag == CpuFlags.None || Flags.HasFlag(controlFlag))
+		var nextIp = controlFlag == CpuFlags.None || Flags.HasFlag(controlFlag)
 			? InstructionPointer + Data1
 			: InstructionPointer + 2;
+
+		DebugMessageWithCallerInfo($"{(controlFlag != CpuFlags.None ? $"{controlFlag}" : "")} => {(controlFlag != CpuFlags.None ? $"{Flags.HasFlag(controlFlag)}" : "")} [IP:{nextIp:x4}]");
+		return nextIp;
 	}
 
 	/// <summary>
@@ -715,13 +721,13 @@ public class A19(bool isDebug)
 	private int Return(CpuFlags controlFlag)
 	{
 		//	If required flag is not set and not a flagless return, move 1 instruction along
-		if (controlFlag != CpuFlags.None && !Flags.HasFlag(controlFlag))
-			return InstructionPointer + 1;
-
-		if (StackPointer == KnownMemory.STACK_BOTTOM)
-			throw new StackOverflowException("Stack is empty");
-
-		return ByteCode[StackPointer++];
+		var nextIp = controlFlag != CpuFlags.None && !Flags.HasFlag(controlFlag)
+			? InstructionPointer + 1
+			: StackPointer == KnownMemory.STACK_BOTTOM
+				? throw new StackOverflowException("Stack is empty")
+				: ByteCode[StackPointer++];
+		DebugMessageWithCallerInfo($"{(controlFlag != CpuFlags.None ? $"{controlFlag}" : "")} => {(controlFlag != CpuFlags.None ? $"{Flags.HasFlag(controlFlag)}" : "")} [IP:{InstructionPointer:x4}]");
+		return nextIp;
 	}
 
 	/// <summary>
@@ -756,7 +762,7 @@ public class A19(bool isDebug)
 			? Flags | CpuFlags.Minus
 			: Flags & ~CpuFlags.Minus;
 
-		DebugMessageWithCallerInfo($"{controlFlag} => [{Flags}]");
+		DebugMessageWithCallerInfo($"[{controlFlag}] => [{Flags}]");
 		return InstructionPointer + 1;
 	}
 
@@ -784,7 +790,7 @@ public class A19(bool isDebug)
 			CpuFlags.Minus => Flags & ~CpuFlags.Minus,
 			_ => throw new ArgumentOutOfRangeException(nameof(controlFlag), controlFlag, null)
 		};
-		DebugMessageWithCallerInfo($"{controlFlag} => [{Flags}]");
+		DebugMessageWithCallerInfo($"[{controlFlag}] => [{Flags}]");
 		return InstructionPointer + 1;
 	}
 
@@ -794,7 +800,8 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int LoadInc()
 	{
-		WriteToMemory(B++, GetRegisterValue(Register.A));
+		DebugMessageWithCallerInfo($"A={A}, B={B:x2}");
+		WriteToMemory(B++, A);
 		return InstructionPointer + 1;
 	}
 
@@ -805,9 +812,10 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int LoadIncRepeat()
 	{
+		DebugMessageWithCallerInfo($"A={A}, B={B:x2}, C={C}");
 		do
 		{
-			ByteCode[B++] = GetRegisterValue(Register.A);
+			WriteToMemory(B++, A);
 			C--;
 		} while (C > 0);
 
@@ -823,8 +831,8 @@ public class A19(bool isDebug)
 	private int CompareInc()
 	{
 		var rhs = GetRegisterValue(Register.DirectB);
-		var result = A - rhs;
-		SetFlagsFromValue(Register.A, result);
+		var result = SetFlagsFromValue(Register.A, A - rhs);
+		DebugMessageWithCallerInfo($"A={A}, B={B:x2}, [{B:x2}] => {rhs:x2}, result={result}, Flags=[{Flags}]");
 		B++;
 		return InstructionPointer + 1;
 	}
@@ -841,8 +849,8 @@ public class A19(bool isDebug)
 		do
 		{
 			var rhs = GetRegisterValue(Register.DirectB);
-			var result = A - rhs;
-			SetFlagsFromValue(Register.A, result);
+			var result = SetFlagsFromValue(Register.A, A - rhs);
+			DebugMessageWithCallerInfo($"A={A}, C={C}, B={B:x2}, [{B:x2}] => {rhs:x2}, result={result}, Flags=[{Flags}]");
 			B++;
 			C--;
 		} while (C > 0 || NonZero);
@@ -857,7 +865,8 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int LoadDec()
 	{
-		ByteCode[B--] = GetRegisterValue(Register.A);
+		DebugMessageWithCallerInfo($"A={A}, B={B:x2}");
+		WriteToMemory(B--, A);
 		return InstructionPointer + 1;
 	}
 
@@ -868,9 +877,10 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int LoadDecRepeat()
 	{
+		DebugMessageWithCallerInfo($"A={A}, B={B:x2}, C={C}");
 		do
 		{
-			ByteCode[B--] = GetRegisterValue(Register.A);
+			WriteToMemory(B--, A);
 			C--;
 		} while (C != 0);
 
@@ -886,8 +896,8 @@ public class A19(bool isDebug)
 	private int CompareDec()
 	{
 		var rhs = GetRegisterValue(Register.DirectB);
-		var result = A - rhs;
-		SetFlagsFromValue(Register.A, result);
+		var result = SetFlagsFromValue(Register.A, A - rhs);
+		DebugMessageWithCallerInfo($"A={A}, B={B:x2}, [{B:x2}] => {rhs:x2}, result={result}, Flags=[{Flags}]");
 		B--;
 		return InstructionPointer + 1;
 	}
@@ -904,8 +914,8 @@ public class A19(bool isDebug)
 		do
 		{
 			var rhs = GetRegisterValue(Register.DirectB);
-			var result = A - rhs;
-			SetFlagsFromValue(Register.A, result);
+			var result = SetFlagsFromValue(Register.A, A - rhs);
+			DebugMessageWithCallerInfo($"A={A}, C={C}, B={B:x2}, [{B:x2}] => {rhs:x2}, result={result}, Flags=[{Flags}]");
 			B--;
 			C--;
 		} while (C > 0 || NonZero);
