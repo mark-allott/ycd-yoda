@@ -202,6 +202,7 @@ public abstract class AbstractVirtualMachine
 		    (ByteCode[location] & 1) == 0 && 
 		    (value & 1) == 1)
 			UpdateScreen();
+		DebugMessageWithCallerInfo($"[{location:x4}] => {ByteCode[location]:x2} to {byteValue:x2}");
 		return ByteCode[location] = byteValue;
 	}
 
