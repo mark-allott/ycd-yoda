@@ -31,8 +31,8 @@ public class A19(bool isDebug)
 
 	#region Fields
 
-	protected int _stackPointer = KnownMemory.STACK_BOTTOM;
-	protected bool _interruptsEnabled;
+	protected int StackPointer = KnownMemory.STACK_BOTTOM;
+	protected bool InterruptsEnabled;
 
 	#endregion
 
@@ -64,8 +64,8 @@ public class A19(bool isDebug)
 	/// <exception cref="InvalidOperationException"></exception>
 	public override async Task Execute()
 	{
-		_interruptsEnabled = false;
-		_stackPointer = KnownMemory.STACK_BOTTOM;
+		InterruptsEnabled = false;
+		StackPointer = KnownMemory.STACK_BOTTOM;
 		InstructionPointer = KnownMemory.APP_DATA_BOTTOM;
 		DebugMessageWithCallerInfo($"Starting program execution");
 
@@ -79,7 +79,7 @@ public class A19(bool isDebug)
 				var keyPressed = Console.ReadKey().Key;
 
 				//	Process the keypress if interrupts are enabled
-				if (_interruptsEnabled)
+				if (InterruptsEnabled)
 					InstructionPointer = keyPressed switch
 					{
 						ConsoleKey.LeftArrow => ByteCode[KnownMemory.IVT_LEFT_ARROW],
@@ -405,7 +405,7 @@ public class A19(bool isDebug)
 		//		Elsewhere, bottom of stack - otherwise a stack overwrite occurs
 		var maxLocation = location >= KnownMemory.LCD_0
 			? ByteCode.Length
-			: _stackPointer - 1;
+			: StackPointer - 1;
 		if (location + fileContents.Length > maxLocation)
 			throw new FileLoadException("File too large");
 
@@ -606,8 +606,8 @@ public class A19(bool isDebug)
 	{
 		var register = GetParameterRegister(OpCode);
 		var registerValue = GetRegisterValue(register);
-		ByteCode[_stackPointer--] = registerValue;
-		DebugMessageWithCallerInfo($"{register} => {registerValue} [SP:{_stackPointer:x4}]");
+		ByteCode[StackPointer--] = registerValue;
+		DebugMessageWithCallerInfo($"{register} => {registerValue} [SP:{StackPointer:x4}]");
 		return GetNewInstructionPointer(register);
 	}
 
@@ -618,13 +618,13 @@ public class A19(bool isDebug)
 	/// <exception cref="StackOverflowException"></exception>
 	private int Pop()
 	{
-		if (_stackPointer == KnownMemory.STACK_BOTTOM)
+		if (StackPointer == KnownMemory.STACK_BOTTOM)
 			throw new StackOverflowException("Stack is empty");
 
 		var register = GetParameterRegister(OpCode);
-		var registerValue = ByteCode[_stackPointer++];
+		var registerValue = ByteCode[StackPointer++];
 		SetValueAndFlags(register, registerValue);
-		DebugMessageWithCallerInfo($"{register} => {registerValue} [SP:{_stackPointer:x4}]");
+		DebugMessageWithCallerInfo($"{register} => {registerValue} [SP:{StackPointer:x4}]");
 		return GetNewInstructionPointer(register);
 	}
 
@@ -643,13 +643,16 @@ public class A19(bool isDebug)
 		//	Next instruction to execute, irrespective of flags
 		var nextIp = (byte)(InstructionPointer + 2);
 
-		//	If required flag is not set and not a straight call, return now
-		if (controlFlag != CpuFlags.None && !Flags.HasFlag(controlFlag))
-			return nextIp;
+		//	If required flag is set or an unconditional call
+		if (controlFlag == CpuFlags.None || Flags.HasFlag(controlFlag))
+		{
+			//	push return address to stack
+			ByteCode[StackPointer--] = nextIp;
+			nextIp = Data1;
+		}
 
-		//	push return address to stack
-		ByteCode[_stackPointer--] = nextIp;
-		return Data1;
+		DebugMessageWithCallerInfo($"{(controlFlag != CpuFlags.None ? $"{controlFlag}" : "")} => {(controlFlag != CpuFlags.None ? $"{Flags.HasFlag(controlFlag)}" : "")} [IP:{InstructionPointer:x4}] [SP:{StackPointer:x4}]");
+		return nextIp;
 	}
 
 	/// <summary>
@@ -700,10 +703,10 @@ public class A19(bool isDebug)
 		if (controlFlag != CpuFlags.None && !Flags.HasFlag(controlFlag))
 			return InstructionPointer + 1;
 
-		if (_stackPointer == KnownMemory.STACK_BOTTOM)
+		if (StackPointer == KnownMemory.STACK_BOTTOM)
 			throw new StackOverflowException("Stack is empty");
 
-		return ByteCode[_stackPointer++];
+		return ByteCode[StackPointer++];
 	}
 
 	/// <summary>
