@@ -18,15 +18,15 @@ public class A19(bool isDebug)
 		Minus = 1 << 6,
 	}
 
-	public enum Register
+	private enum Register
 	{
 		A = 0,
 		B = 1,
 		C = 2,
 		N = 3,
-		[Description("(B)")] IndirectB = 4,
-		[Description("(C)")] IndirectC = 5,
-		[Description("(N)")] IndirectN = 6,
+		[Description("[B]")] DirectB = 4,
+		[Description("[C]")] DirectC = 5,
+		[Description("[N]")] DirectN = 6,
 	}
 
 	#region Fields
