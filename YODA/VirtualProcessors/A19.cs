@@ -351,7 +351,7 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int DisableInterrupt()
 	{
-		_interruptsEnabled = false;
+		InterruptsEnabled = false;
 		return InstructionPointer + 1;
 	}
 
@@ -380,7 +380,7 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int EnableInterrupt()
 	{
-		_interruptsEnabled = true;
+		InterruptsEnabled = true;
 		return InstructionPointer + 1;
 	}
 
