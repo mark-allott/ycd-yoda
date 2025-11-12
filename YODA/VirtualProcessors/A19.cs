@@ -226,7 +226,7 @@ public class A19(bool isDebug)
 			0 => Register.A,
 			1 => Register.B,
 			2 => Register.C,
-			3 => Register.N,
+			3 => Register.DirectN,
 			_ => throw new ArgumentOutOfRangeException()
 		};
 	}
