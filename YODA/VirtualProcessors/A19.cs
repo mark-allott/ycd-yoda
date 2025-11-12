@@ -479,7 +479,7 @@ public class A19(bool isDebug)
 	private int Add()
 	{
 		//	Wants A,B,C or (n)
-		var param1 = GetOperandRegister((OpCode - 0x20) >> 4);
+		var param1 = GetOperandRegister(OpCode);
 		//	Wants A,B,C,N,(B),(C) or (N)
 		var param2 = GetParameterRegister(OpCode);
 		//	get left and right side values
@@ -498,7 +498,7 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int Subtract()
 	{
-		var param1 = GetOperandRegister((OpCode - 0x40) >> 4);
+		var param1 = GetOperandRegister(OpCode);
 		var param2 = GetParameterRegister(OpCode);
 		//	get left and right side values
 		var lhs = GetRegisterValue(param1);
