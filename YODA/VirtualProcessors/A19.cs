@@ -274,7 +274,7 @@ public class A19(bool isDebug)
 	/// <returns>The new value for <see cref="AbstractVirtualMachine.InstructionPointer"/></returns>
 	private int GetNewInstructionPointer(Register registerUsed)
 	{
-		return InstructionPointer + registerUsed is Register.N or Register.IndirectN
+		return InstructionPointer + registerUsed is Register.N or Register.DirectN
 			? 2
 			: 1;
 	}
@@ -460,7 +460,7 @@ public class A19(bool isDebug)
 			case Register.C:
 				C = value;
 				break;
-			case Register.IndirectN:
+			case Register.DirectN:
 				WriteToMemory(value, value);
 				break;
 			default:
