@@ -260,9 +260,9 @@ public class A19(bool isDebug)
 			Register.B => B,
 			Register.C => C,
 			Register.N => Data1,
-			Register.IndirectB => ByteCode[B],
-			Register.IndirectC => ByteCode[C],
-			Register.IndirectN => ByteCode[Data1],
+			Register.DirectB => ByteCode[B],
+			Register.DirectC => ByteCode[C],
+			Register.DirectN => ByteCode[Data1],
 			_ => throw new ArgumentOutOfRangeException()
 		};
 	}
@@ -293,9 +293,9 @@ public class A19(bool isDebug)
 			Register.A => A = value,
 			Register.B => B = value,
 			Register.C => C = value,
-			Register.IndirectB => WriteToMemory(B, value),
-			Register.IndirectC => WriteToMemory(C, value),
-			Register.IndirectN => WriteToMemory(Data1, value),
+			Register.DirectB => WriteToMemory(B, value),
+			Register.DirectC => WriteToMemory(C, value),
+			Register.DirectN => WriteToMemory(Data1, value),
 			_ => throw new ArgumentOutOfRangeException(nameof(register), register, $"Invalid register: {register}")
 		};
 	}
@@ -807,9 +807,8 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int CompareInc()
 	{
-		var lhs = GetRegisterValue(Register.A);
-		var rhs = GetRegisterValue(Register.IndirectB);
-		var result = lhs - rhs;
+		var rhs = GetRegisterValue(Register.DirectB);
+		var result = A - rhs;
 		SetFlagsFromValue(Register.A, result);
 		B++;
 		return InstructionPointer + 1;
@@ -826,9 +825,8 @@ public class A19(bool isDebug)
 	{
 		do
 		{
-			var lhs = GetRegisterValue(Register.A);
-			var rhs = GetRegisterValue(Register.IndirectB);
-			var result = lhs - rhs;
+			var rhs = GetRegisterValue(Register.DirectB);
+			var result = A - rhs;
 			SetFlagsFromValue(Register.A, result);
 			B++;
 			C--;
@@ -872,9 +870,8 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int CompareDec()
 	{
-		var lhs = GetRegisterValue(Register.A);
-		var rhs = GetRegisterValue(Register.IndirectB);
-		var result = lhs - rhs;
+		var rhs = GetRegisterValue(Register.DirectB);
+		var result = A - rhs;
 		SetFlagsFromValue(Register.A, result);
 		B--;
 		return InstructionPointer + 1;
@@ -891,9 +888,8 @@ public class A19(bool isDebug)
 	{
 		do
 		{
-			var lhs = GetRegisterValue(Register.A);
-			var rhs = GetRegisterValue(Register.IndirectB);
-			var result = lhs - rhs;
+			var rhs = GetRegisterValue(Register.DirectB);
+			var result = A - rhs;
 			SetFlagsFromValue(Register.A, result);
 			B--;
 			C--;
