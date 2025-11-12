@@ -313,6 +313,8 @@ public class A19(bool isDebug)
 			SetFlag(CpuFlags.Carry);
 		else if (result < 0)
 			SetFlag(CpuFlags.Minus);
+		else
+			SetFlag(CpuFlags.NoCarry);
 
 		//	Mask to 8-bit value
 		var value = (byte)(result & 0xFF);
