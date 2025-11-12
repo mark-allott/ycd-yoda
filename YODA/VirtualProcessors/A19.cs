@@ -346,13 +346,27 @@ public class A19(bool isDebug)
 	#region OpCode implementations
 
 	/// <summary>
+	/// Common method to set interrupt handling state and report execution state in console
+	/// </summary>
+	/// <param name="value">The new state of the <see cref="InterruptsEnabled"/> flag</param>
+	/// <returns>The next instruction</returns>
+	private int SetInterruptEnabled(bool value)
+	{
+		var previous = InterruptsEnabled;
+		InterruptsEnabled = false;
+		DebugMessageWithCallerInfo(
+			$"Interrupts were {(previous ? "Enabled" : "Disabled")}, now {(InterruptsEnabled ? "Enabled" : "Disabled")}",
+			value ? nameof(EnableInterrupt) : nameof(DisableInterrupt));
+		return InstructionPointer + 1;
+	}
+	
+	/// <summary>
 	/// Flags interrupts as disabled
 	/// </summary>
 	/// <returns>The next instruction location</returns>
 	private int DisableInterrupt()
 	{
-		InterruptsEnabled = false;
-		return InstructionPointer + 1;
+		return SetInterruptEnabled(false);
 	}
 
 	/// <summary>
@@ -380,8 +394,7 @@ public class A19(bool isDebug)
 	/// <returns>The next instruction location</returns>
 	private int EnableInterrupt()
 	{
-		InterruptsEnabled = true;
-		return InstructionPointer + 1;
+		return SetInterruptEnabled(true);
 	}
 
 	/// <summary>
