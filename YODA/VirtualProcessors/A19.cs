@@ -454,13 +454,13 @@ public class A19(bool isDebug)
 		switch (param1)
 		{
 			case Register.A:
-				A = value;
+				SetValueAndFlags(Register.A, value);
 				break;
 			case Register.B:
-				B = value;
+				SetValueAndFlags(Register.B, value);
 				break;
 			case Register.C:
-				C = value;
+				SetValueAndFlags(Register.C, value);
 				break;
 			case Register.DirectN:
 				WriteToMemory(value, value);
