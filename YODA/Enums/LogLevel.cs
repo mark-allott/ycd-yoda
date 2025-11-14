@@ -8,5 +8,6 @@ public enum LogLevel
 	Warning,
 	Error,
 	Critical,
+	Screen,
 	None
 }
