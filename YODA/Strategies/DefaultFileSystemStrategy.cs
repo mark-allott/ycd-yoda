@@ -5,6 +5,11 @@ namespace SimpleInstructionMachine.Strategies;
 public class DefaultFileSystemStrategy
 	: IFileSystemStrategy
 {
+	#region Fields
+
+	private const string BootfileName = "boot";
+
+	#endregion
 	#region Properties
 
 	/// <summary>
@@ -66,6 +71,12 @@ public class DefaultFileSystemStrategy
 	}
 
 	/// <inheritdoc/>
+	public byte[] LoadBootFile()
+	{
+		return Task.Run(() => LoadBootFileAsync(CancellationToken.None)).Result;
+	}
+	
+	/// <inheritdoc/>
 	public async Task SaveToFileAsync(int fileNumber, byte[] contents, CancellationToken token)
 	{
         CheckFileNumber(fileNumber);
@@ -86,9 +97,14 @@ public class DefaultFileSystemStrategy
         //	If the cancellation token is already set, return now
         if (token.IsCancellationRequested)
 	        return [];
-        return await File.ReadAllBytesAsync(Path.Combine(Folder, GetFileName(fileNumber)), token);
+        return await InternalLoadFromFileAsync(GetFileName(fileNumber), token);
 	}
 
+	public async Task<byte[]> LoadBootFileAsync(CancellationToken token)
+	{
+		return await InternalLoadFromFileAsync(BootfileName, token);
+	}
+	
 	#endregion
 
 	#region Methods
@@ -125,5 +141,12 @@ public class DefaultFileSystemStrategy
 		return FileNameStrategy.GetFileName((byte)fileNumber);
 	}
 
+	private async Task<byte[]> InternalLoadFromFileAsync(string filename, CancellationToken token)
+	{
+		//	If the cancellation token is already set, return now
+		if (token.IsCancellationRequested)
+			return [];
+		return await File.ReadAllBytesAsync(Path.Combine(Folder, filename), token);
+	}
 	#endregion
 }
