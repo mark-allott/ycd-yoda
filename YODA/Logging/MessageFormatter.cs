@@ -1,5 +1,6 @@
 using System.Text;
 using SimpleInstructionMachine.Enums;
+using SimpleInstructionMachine.Extensions;
 
 namespace SimpleInstructionMachine.Logging;
 
@@ -17,8 +18,8 @@ public static class MessageFormatter
 	public static string FormatMessage(LogLevel level, string message)
 	{
 		//	Work out the prefix for the message using the level of the message
-		//	Result is teh LogLevel string, left-padded to achieve 8 characters in total
-		var prefix = $"    {level}"[^8..];
+		//	Result is the description of the LogLevel string, trimmed to achieve 4 characters in total
+		var prefix = EnumExtensions.Description(level)[..4];
 
 		//	As the message may include multiple lines, split the message on newline boundaries and prefix each line
 		var sb = new StringBuilder();
