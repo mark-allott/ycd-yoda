@@ -4,34 +4,34 @@ public interface IFileSystemStrategy
 {
 	/// <summary>
 	/// Performs the writing of the specified <paramref name="contents"/> to the underlying virtual file system with the
-	/// specified <paramref name="filename"/>
+	/// specified <paramref name="fileNumber"/>
 	/// </summary>
-	/// <param name="filename">The name to be given to the file</param>
+	/// <param name="fileNumber">The number for the file</param>
 	/// <param name="contents">The contents of the file to be written</param>
-	void SaveToFile(string filename, byte[] contents);
-	
+	void SaveToFile(int fileNumber, byte[] contents);
+
 	/// <summary>
-	/// Returns the contents of the file named <paramref name="filename"/> from the virtual file system
+	/// Returns the contents of the file named <paramref name="fileNumber"/> from the virtual file system
 	/// </summary>
-	/// <param name="filename">The name of the file to be read</param>
+	/// <param name="fileNumber">The number for the file</param>
 	/// <returns>The contents of the specified file</returns>
-	byte[] LoadFromFile(string filename);
+	byte[] LoadFromFile(int fileNumber);
 	
 	/// <summary>
 	/// Performs the writing of the specified <paramref name="contents"/> to the underlying virtual file system with the
-	/// specified <paramref name="filename"/> with async support
+	/// specified <paramref name="fileNumber"/> with async support
 	/// </summary>
-	/// <param name="filename">The name to be given to the file</param>
+	/// <param name="fileNumber">The number for the file</param>
 	/// <param name="contents">The contents of the file to be written</param>
 	/// <param name="token">The cancellation token</param>
 	/// <returns></returns>
-	Task SaveToFileAsync(string filename, byte[] contents, CancellationToken token);
+	Task SaveToFileAsync(int fileNumber, byte[] contents, CancellationToken token);
 	
 	/// <summary>
-	/// Returns the contents of the file named <paramref name="filename"/> from the virtual file system
+	/// Returns the contents of the file named <paramref name="fileNumber"/> from the virtual file system
 	/// </summary>
-	/// <param name="filename">The name of the file to be read</param>
+	/// <param name="fileNumber">The number for the file</param>
 	/// <param name="token">The cancellation token</param>
 	/// <returns>The contents of the specified file</returns>
-	Task<byte[]> LoadFromFileAsync(string filename, CancellationToken token);
+	Task<byte[]> LoadFromFileAsync(int fileNumber, CancellationToken token);
 }
