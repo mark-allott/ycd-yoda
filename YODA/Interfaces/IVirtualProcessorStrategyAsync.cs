@@ -1,31 +1,31 @@
 namespace SimpleInstructionMachine.Interfaces;
 
-public interface IVirtualProcessorStrategy
+public interface IVirtualProcessorStrategyAsync
 {
 	/// <summary>
 	/// Configures the virtual CPU prior to running
 	/// </summary>
 	/// <param name="folderPath"></param>
 	/// <returns></returns>
-	void Configure(string folderPath);
+	Task Configure(string folderPath);
 	
 	/// <summary>
 	/// Loads a pre-compiled binary program from the specified <paramref name="filename"/>
 	/// </summary>
 	/// <param name="filename">The name of the file to load into system memory</param>
 	/// <returns></returns>
-	void LoadProgram(string filename);
+	Task LoadProgram(string filename);
 	
 	/// <summary>
 	/// Loads a pre-compiled binary program from the specified byte array
 	/// </summary>
 	/// <param name="program">The pre-compiled binary program</param>
 	/// <returns></returns>
-	void LoadProgram(byte[] program);
+	Task LoadProgram(byte[] program);
 	
 	/// <summary>
 	/// Executes the program loaded into system memory
 	/// </summary>
 	/// <returns></returns>
-	void Run();
+	Task Run();
 }
