@@ -4,10 +4,16 @@ public interface IVirtualMachine
 	: IMemoryAccess<byte>
 {
 	/// <summary>
-	/// Performs the required actions to bootstrap the machine
+	/// Performs the required actions to bootstrap the machine from the FileSystem bootfile
 	/// </summary>
 	void Boot();
 
+	/// <summary>
+	/// Bootstraps the system memory from the supplied program 
+	/// </summary>
+	/// <param name="program"></param>
+	void Boot(byte[] program);
+	
 	/// <summary>
 	/// Provides access to all the machine memory as an array
 	/// </summary>

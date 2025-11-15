@@ -61,13 +61,18 @@ public class DefaultVirtualMachine
 	/// <inheritdoc/>
 	public void Boot()
 	{
-		//	Load the file from the filesystem
-		var bootfile = _fileSystemStrategy.LoadBootFile();
+		//	Load the file from the filesystem and bootstrap using the bytes read from the file
+		Boot(_fileSystemStrategy.LoadBootFile());
+	}
+
+	/// <inheritdoc/>
+	public void Boot(byte[] program)
+	{
 		//	Ensure it is of correct length
-		ArgumentOutOfRangeException.ThrowIfZero(bootfile.Length);
-		ArgumentOutOfRangeException.ThrowIfGreaterThan(bootfile.Length, _memory.Length);
+		ArgumentOutOfRangeException.ThrowIfZero(program.Length);
+		ArgumentOutOfRangeException.ThrowIfGreaterThan(program.Length, _memory.Length);
 		//	Copy to the system memory
-		bootfile.CopyTo(_memory, 0);
+		program.CopyTo(_memory, 0);
 	}
 
 	/// <inheritdoc/>
