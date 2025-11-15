@@ -10,20 +10,6 @@ public interface IVirtualProcessorStrategy
 	void Configure(string folderPath);
 	
 	/// <summary>
-	/// Loads a pre-compiled binary program from the specified <paramref name="filename"/>
-	/// </summary>
-	/// <param name="filename">The name of the file to load into system memory</param>
-	/// <returns></returns>
-	void LoadProgram(string filename);
-	
-	/// <summary>
-	/// Loads a pre-compiled binary program from the specified byte array
-	/// </summary>
-	/// <param name="program">The pre-compiled binary program</param>
-	/// <returns></returns>
-	void LoadProgram(byte[] program);
-	
-	/// <summary>
 	/// Executes the program loaded into system memory
 	/// </summary>
 	/// <returns></returns>
