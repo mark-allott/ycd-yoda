@@ -15,12 +15,6 @@ public interface IVirtualMachine
 	void Boot(byte[] program);
 	
 	/// <summary>
-	/// Provides access to all the machine memory as an array
-	/// </summary>
-	/// <remarks>Implementors should consider making this a read-only property, with writing performed only by <see cref="WriteToMemory"/></remarks>
-	byte[] MachineMemory { get; }
-
-	/// <summary>
 	/// Performs a "refresh" of the machine's screen, with output directed to the appropriate logging device
 	/// </summary>
 	/// <param name="refreshFlag">The value written to the control flag memory location</param>
