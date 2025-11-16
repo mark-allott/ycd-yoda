@@ -1,3 +1,4 @@
+using System.Text;
 using SimpleInstructionMachine.Interfaces;
 
 namespace SimpleInstructionMachine.Strategies;
@@ -7,9 +8,11 @@ public class DefaultFileSystemStrategy
 {
 	#region Fields
 
-	private const string BootfileName = "boot";
+	private const string BootFilename = "boot";
+	private const string CrashDumpFilename = "crash_dump";
 
 	#endregion
+
 	#region Properties
 
 	/// <summary>
@@ -58,16 +61,16 @@ public class DefaultFileSystemStrategy
 	/// <inheritdoc/>
 	public void SaveToFile(int fileNumber, byte[] contents)
 	{
-        CheckFileNumber(fileNumber);
-        CheckContents(contents);
-        Task.Run(() => SaveToFileAsync(fileNumber, contents, CancellationToken.None));
+		CheckFileNumber(fileNumber);
+		CheckContents(contents);
+		Task.Run(() => SaveToFileAsync(fileNumber, contents, CancellationToken.None));
 	}
 
 	/// <inheritdoc/>
 	public byte[] LoadFromFile(int fileNumber)
 	{
-        CheckFileNumber(fileNumber);
-        return Task.Run(() => LoadFromFileAsync(fileNumber, CancellationToken.None)).Result;
+		CheckFileNumber(fileNumber);
+		return Task.Run(() => LoadFromFileAsync(fileNumber, CancellationToken.None)).Result;
 	}
 
 	/// <inheritdoc/>
@@ -75,36 +78,58 @@ public class DefaultFileSystemStrategy
 	{
 		return Task.Run(() => LoadBootFileAsync(CancellationToken.None)).Result;
 	}
-	
+
+	/// <inheritdoc/>
+	public void WriteCrashDump(bool writeBinary, byte[] contents, int instructionPointer)
+	{
+		Task.Run(() => WriteCrashDumpAsync(writeBinary, contents, instructionPointer, CancellationToken.None));
+	}
+
 	/// <inheritdoc/>
 	public async Task SaveToFileAsync(int fileNumber, byte[] contents, CancellationToken token)
 	{
-        CheckFileNumber(fileNumber);
-        CheckContents(contents);
-        
-        //	If the cancellation token is already set, return now
-        if (token.IsCancellationRequested)
-	        return;
+		CheckFileNumber(fileNumber);
+		CheckContents(contents);
 
-        var fileName = Path.Combine(Folder, GetFileName(fileNumber));
-		await File.WriteAllBytesAsync(fileName, contents, token);
+		//	If the cancellation token is already set, return now
+		if (token.IsCancellationRequested)
+			return;
+
+		var fileName = Path.Combine(Folder, GetFileName(fileNumber));
+		await InternalSaveToFileAsync(fileName, contents, token);
 	}
 
 	/// <inheritdoc/>
 	public async Task<byte[]> LoadFromFileAsync(int fileNumber, CancellationToken token)
 	{
-        CheckFileNumber(fileNumber);
-        //	If the cancellation token is already set, return now
-        if (token.IsCancellationRequested)
-	        return [];
-        return await InternalLoadFromFileAsync(GetFileName(fileNumber), token);
+		CheckFileNumber(fileNumber);
+		//	If the cancellation token is already set, return now
+		if (token.IsCancellationRequested)
+			return [];
+		return await InternalLoadFromFileAsync(GetFileName(fileNumber), token);
 	}
 
+	/// <inheritdoc/>
 	public async Task<byte[]> LoadBootFileAsync(CancellationToken token)
 	{
-		return await InternalLoadFromFileAsync(BootfileName, token);
+		return await InternalLoadFromFileAsync(BootFilename, token);
 	}
-	
+
+	/// <inheritdoc/>
+	public Task WriteCrashDumpAsync(bool writeBinary, byte[] contents, int instructionPointer, CancellationToken token)
+	{
+		if (writeBinary)
+			return InternalSaveToFileAsync(CrashDumpFilename, contents, token);
+
+		//	Build the crash dump text in a StringBuilder first
+		var sb = new StringBuilder();
+		for (var i = 0; i < contents.Length; i++)
+			sb.AppendLine($"{i:X2}   {contents[i]}{(i == instructionPointer ? "    <---- INSTRUCTION POINTER" : "")}");
+		//	Convert from string to array of bytes
+		var bytes = Encoding.ASCII.GetBytes(sb.ToString());
+		return InternalSaveToFileAsync(Path.ChangeExtension(CrashDumpFilename, ".txt"), bytes, token);
+	}
+
 	#endregion
 
 	#region Methods
@@ -141,6 +166,12 @@ public class DefaultFileSystemStrategy
 		return FileNameStrategy.GetFileName((byte)fileNumber);
 	}
 
+	/// <summary>
+	/// Internal method supporting loading files from the file system with a specific file name
+	/// </summary>
+	/// <param name="filename">The name of the file to be loaded</param>
+	/// <param name="token"></param>
+	/// <returns></returns>
 	private async Task<byte[]> InternalLoadFromFileAsync(string filename, CancellationToken token)
 	{
 		//	If the cancellation token is already set, return now
@@ -148,5 +179,20 @@ public class DefaultFileSystemStrategy
 			return [];
 		return await File.ReadAllBytesAsync(Path.Combine(Folder, filename), token);
 	}
+
+	/// <summary>
+	/// Internal method to support writing files to the file system with a specific name
+	/// </summary>
+	/// <param name="filename">The name of the file to be saved</param>
+	/// <param name="contents">The contents of the file to be written</param>
+	/// <param name="token"></param>
+	private async Task InternalSaveToFileAsync(string filename, byte[] contents, CancellationToken token)
+	{
+		//	If the cancellation token is already set, return now
+		if (token.IsCancellationRequested)
+			return;
+		await File.WriteAllBytesAsync(Path.Combine(Folder, filename), contents, token);
+	}
+
 	#endregion
 }
