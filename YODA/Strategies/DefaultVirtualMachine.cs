@@ -92,7 +92,7 @@ public class DefaultVirtualMachine
 			RefreshScreen(value);
 	}
 
-	public byte[] MachineMemory => _memory.AsReadOnly().ToArray();
+	public byte[] Memory => _memory.AsReadOnly().ToArray();
 
 	private const string LcdDisplayOuter = "---------------------";
 
