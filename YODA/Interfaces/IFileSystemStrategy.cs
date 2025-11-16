@@ -24,6 +24,14 @@ public interface IFileSystemStrategy
 	byte[] LoadBootFile();
 
 	/// <summary>
+	/// Writes the memory <paramref name="contents"/> to the crash dump file in either binary of text format
+	/// </summary>
+	/// <param name="writeBinary">A flag indicating whether to write the binary or text representation of the crash dump file</param>
+	/// <param name="contents">The memory contents to dump</param>
+	/// <param name="instructionPointer">The current location of the instruction pointer</param>
+	void WriteCrashDump(bool writeBinary, byte[] contents, int instructionPointer);
+
+	/// <summary>
 	/// Performs the writing of the specified <paramref name="contents"/> to the underlying virtual file system with the
 	/// specified <paramref name="fileNumber"/> with async support
 	/// </summary>
@@ -47,4 +55,13 @@ public interface IFileSystemStrategy
 	/// <param name="token">The cancellation token</param>
 	/// <returns>The contents of the specified file</returns>
 	Task<byte[]> LoadBootFileAsync(CancellationToken token);
+
+	/// <summary>
+	/// Writes the memory <paramref name="contents"/> to the crash dump file in either binary of text format with async support
+	/// </summary>
+	/// <param name="writeBinary">A flag indicating whether to write the binary or text representation of the crash dump file</param>
+	/// <param name="contents">The memory contents to dump</param>
+	/// <param name="instructionPointer">The current location of the instruction pointer</param>
+	/// <param name="token">The cancellation token</param>
+	Task WriteCrashDumpAsync(bool writeBinary, byte[] contents, int instructionPointer, CancellationToken token);
 }
