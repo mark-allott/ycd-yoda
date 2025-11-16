@@ -19,7 +19,7 @@ public class DefaultVirtualMachine
 
 	#region Properties
 
-	//
+	public int MemorySize { get; private set; }
 	
 	#endregion
 
@@ -52,6 +52,7 @@ public class DefaultVirtualMachine
 		_isDebug = isDebug;
 		_fileSystemStrategy = fileSystemStrategy;
 		_logger = logger;
+		MemorySize = memorySize;
 	}
 
 	#endregion

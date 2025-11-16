@@ -22,4 +22,9 @@ public interface IMemoryAccess<T>
 	/// </summary>
 	/// <remarks>Implementors should consider making this a read-only property, with writing performed only by <see cref="WriteToMemory"/></remarks>
 	T[] Memory { get; }
+	
+	/// <summary>
+	/// Yields the size of the managed memory area
+	/// </summary>
+	int MemorySize { get; }
 }
