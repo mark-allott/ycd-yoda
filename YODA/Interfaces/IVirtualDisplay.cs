@@ -7,10 +7,11 @@ public interface IVirtualDisplay<in T>
 	/// Holds the memory address which controls refreshing of the virtual display
 	/// </summary>
 	int ControlFlagAddress { get; }
-	
+
 	/// <summary>
 	/// Performs a refresh of the screen if the <see cref="ControlFlagAddress"/> value toggles and has bit 0 set
 	/// </summary>
 	/// <param name="controlFlags">The value for the flag</param>
-	void Refresh(T controlFlags);
+	/// <param name="displayBuffer">Holds the contents of the memory locations with screen display information</param>
+	void Refresh(T controlFlags, T[] displayBuffer);
 }
