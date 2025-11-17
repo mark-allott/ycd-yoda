@@ -15,48 +15,25 @@ public class ByteVirtualDisplay
 	private readonly ILogger _logger;
 
 	/// <summary>
-	/// The class responsible for handling memory access for the machine
-	/// </summary>
-	private readonly IMemoryAccess<byte> _memory;
-
-	/// <summary>
 	/// Holds the current state of the refresh flag
 	/// </summary>
 	private byte _currentState;
-
-	/// <summary>
-	/// Used to "wrap" the LCD output for the logger
-	/// </summary>
-	private const string LcdDisplayOuter = "---------------------";
 
 	#endregion
 
 	#region Constructor
 
 	/// <summary>
-	/// Simple constructor, requires only the <paramref name="logger"/> implementation
-	/// </summary>
-	/// <param name="logger">A logger which will accept the screen output</param>
-	/// <param name="memoryAccess">A class handling the memory state for the machine</param>
-	public ByteVirtualDisplay(ILogger logger, IMemoryAccess<byte> memoryAccess)
-		: this(logger, memoryAccess, KnownMemory.ControlFlags, 0)
-	{
-	}
-
-	/// <summary>
 	/// Standard constructor, allows setting of the <paramref name="logger"/>, the <paramref name="controlFlagAddress"/>
 	/// trigger location and an <paramref name="initialState"/> for the flag
 	/// </summary>
 	/// <param name="logger">A logger which will accept the screen output</param>
-	/// <param name="memoryAccess">A class handling the memory state for the machine</param>
 	/// <param name="controlFlagAddress">The memory address which would trigger a refresh</param>
 	/// <param name="initialState">The initial state of the control flag</param>
 	/// <exception cref="ArgumentNullException"></exception>
-	public ByteVirtualDisplay(ILogger logger, IMemoryAccess<byte> memoryAccess, byte controlFlagAddress,
-		byte initialState = 0)
+	public ByteVirtualDisplay(ILogger logger, int controlFlagAddress, byte initialState = 0)
 	{
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
-		_memory = memoryAccess ?? throw new ArgumentNullException(nameof(memoryAccess));
 		ControlFlagAddress = controlFlagAddress;
 		_currentState = initialState;
 	}
@@ -65,9 +42,11 @@ public class ByteVirtualDisplay
 
 	#region IVirtualDisplay<byte> Members
 
+	/// <inheritdoc/>
 	public int ControlFlagAddress { get; }
 
-	public void Refresh(byte controlFlags)
+	/// <inheritdoc/>
+	public void Refresh(byte controlFlags, byte[] displayBuffer)
 	{
 		//	Mask the control flag and refresh flag values for bit 0
 		var cf = (byte)(_currentState & 1);
@@ -82,12 +61,17 @@ public class ByteVirtualDisplay
 			return;
 
 		//	Refreshing, so build the display output
+		var outer = new string('-', 1 + 4 * displayBuffer.Length);
+		//	Top line
 		var sb = new StringBuilder()
-			.AppendLine(LcdDisplayOuter)
-			.Append($"| {ToChar(_memory[KnownMemory.LCD_0])} | {ToChar(_memory[KnownMemory.LCD_1])} ")
-			.Append($"| {ToChar(_memory[KnownMemory.LCD_2])} | {ToChar(_memory[KnownMemory.LCD_3])} ")
-			.AppendLine($"| {ToChar(_memory[KnownMemory.LCD_4])} |")
-			.AppendLine(LcdDisplayOuter);
+			.AppendLine(outer);
+		//	Each segment
+		foreach (var b in displayBuffer)
+			sb.Append($"| {ToChar(b)} ");
+		//	Finish display of segments and bottom line
+		sb.AppendLine("|")
+			.AppendLine(outer);
+
 		_logger.Log(LogLevel.Screen, sb.ToString());
 		return;
 
