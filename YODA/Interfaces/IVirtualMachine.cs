@@ -1,7 +1,7 @@
 namespace SimpleInstructionMachine.Interfaces;
 
-public interface IVirtualMachine
-	: IMemoryAccess<byte>
+public interface IVirtualMachine<in T>
+	where T : struct
 {
 	/// <summary>
 	/// Performs the required actions to bootstrap the machine from the FileSystem bootfile
@@ -12,16 +12,15 @@ public interface IVirtualMachine
 	/// Bootstraps the system memory from the supplied program 
 	/// </summary>
 	/// <param name="program"></param>
-	void Boot(byte[] program);
-	
+	void Boot(T[] program);
+
 	/// <summary>
-	/// Performs a "refresh" of the machine's screen, with output directed to the appropriate logging device
+	/// Runs the program the machine has been bootstrapped with
 	/// </summary>
-	/// <param name="refreshFlag">The value written to the control flag memory location</param>
-	/// <remarks>
-	/// The <paramref name="refreshFlag"/> value should be tested against the current value of the control flag memory
-	/// location. Both values should be masked for bit 0, checked for a change and if the result is "set", then the
-	/// screen should be refreshed.
-	/// </remarks>
-	void RefreshScreen(byte refreshFlag);
+	void Run();
+
+	/// <summary>
+	/// Runs the program the machine has been bootstrapped with async support
+	/// </summary>
+	Task RunAsync(CancellationToken token);
 }
