@@ -31,8 +31,9 @@ public class ByteMemoryAccess
 		ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(memorySize, 0);
 		ArgumentNullException.ThrowIfNull(virtualDisplay);
 		_memory = new byte[memorySize];
+		_memory.Initialize();
 		MemorySize = memorySize;
-		_virtualDisplay = virtualDisplay;
+		_virtualDisplay = virtualDisplay ?? throw new ArgumentNullException(nameof(virtualDisplay));
 	}
 
 	#endregion
@@ -54,7 +55,22 @@ public class ByteMemoryAccess
 
 		//	Check if the control flag for the virtual display is updated and call if required 
 		if (address == _virtualDisplay.ControlFlagAddress)
-			_virtualDisplay.Refresh(value);
+			_virtualDisplay.Refresh(value, _memory[KnownMemory.LCD_0..KnownMemory.LCD_4]);
+	}
+
+	/// <inheritdoc/>
+	public void WriteToMemory(int address, byte[] values)
+	{
+		ArgumentNullException.ThrowIfNull(values);
+		ArgumentOutOfRangeException.ThrowIfZero(values.Length);
+		ArgumentOutOfRangeException.ThrowIfGreaterThan(address + values.Length, MemorySize);
+		CheckAddress(address);
+		values.CopyTo(_memory, address);
+
+		//	Check if the control flag for the virtual display is updated and call if required
+		var offset = _virtualDisplay.ControlFlagAddress - address;
+		if (offset > 0 && offset < values.Length)
+			_virtualDisplay.Refresh(_memory[_virtualDisplay.ControlFlagAddress], _memory[KnownMemory.LCD_0..KnownMemory.LCD_4]);
 	}
 
 	/// <inheritdoc/>
@@ -64,7 +80,7 @@ public class ByteMemoryAccess
 	public int MemorySize { get; private set; }
 
 	/// <inheritdoc/>
-	public byte this[byte index] => ReadFromMemory(index);
+	public byte this[int index] => ReadFromMemory(index);
 
 	#endregion
 
