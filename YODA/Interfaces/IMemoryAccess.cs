@@ -18,6 +18,13 @@ public interface IMemoryAccess<T>
 	void WriteToMemory(int address, T value);
 	
 	/// <summary>
+	/// Accesses the machine memory and stores the <paramref name="values"/> at the specified <paramref name="address"/>
+	/// </summary>
+	/// <param name="address">The address to store the value in</param>
+	/// <param name="values">The values to be stored</param>
+	void WriteToMemory(int address, T[] values);
+	
+	/// <summary>
 	/// Provides access to all the machine memory as an array
 	/// </summary>
 	/// <remarks>Implementors should consider making this a read-only property, with writing performed only by <see cref="WriteToMemory"/></remarks>
@@ -32,5 +39,5 @@ public interface IMemoryAccess<T>
 	/// An indexer for accessing memory addresses by location
 	/// </summary>
 	/// <param name="index">The location to retrieve the value for</param>
-	T this[T index] { get; }
+	T this[int index] { get; }
 }
