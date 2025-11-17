@@ -27,4 +27,10 @@ public interface IMemoryAccess<T>
 	/// Yields the size of the managed memory area
 	/// </summary>
 	int MemorySize { get; }
+
+	/// <summary>
+	/// An indexer for accessing memory addresses by location
+	/// </summary>
+	/// <param name="index">The location to retrieve the value for</param>
+	T this[T index] { get; }
 }
