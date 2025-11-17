@@ -1,3 +1,4 @@
+using SimpleInstructionMachine.Enums;
 using SimpleInstructionMachine.Interfaces;
 
 namespace SimpleInstructionMachine.Abstractions;
@@ -78,6 +79,14 @@ public class ByteVirtualMachine
 	{
 		if (!_bootstrapped)
 			throw new InvalidOperationException("VirtualMachine is not bootstrapped");
+
+		_logger.Log(LogLevel.Screen, "Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module");
+		_logger.Log(LogLevel.Screen, $"Folder Path: _{_fileSystemStrategy.Folder}\n" );
+		_logger.Log(LogLevel.Screen, $"Connecting to Engine Control System.... SUCCESS!" );
+		_logger.Log(LogLevel.Screen, $"Connecting to Landing Control System.... SUCCESS!" );
+		_logger.Log(LogLevel.Screen, $"Connecting to Interplanetary Communication System.... SUCCESS!" );
+		_logger.Log(LogLevel.Screen, $"All systems are GO!" );
+		
 		throw new NotImplementedException();
 	}
 
