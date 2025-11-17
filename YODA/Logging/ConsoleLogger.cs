@@ -32,7 +32,7 @@ public class ConsoleLogger
 			return;
 
 		var consoleOutput = MessageFormatter.FormatMessage(level, message);
-		if (LogLevel is LogLevel.Error or LogLevel.Critical)
+		if (level is LogLevel.Error or LogLevel.Critical)
 			Console.Error.WriteLine(consoleOutput);
 		else
 			Console.WriteLine(consoleOutput);
