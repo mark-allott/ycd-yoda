@@ -33,9 +33,9 @@ public class ConsoleLogger
 
 		var consoleOutput = MessageFormatter.FormatMessage(level, message);
 		if (level is LogLevel.Error or LogLevel.Critical)
-			Console.Error.WriteLine(consoleOutput);
+			Console.Error.Write(consoleOutput);
 		else
-			Console.WriteLine(consoleOutput);
+			Console.Write(consoleOutput);
 	}
 
 	/// <inheritdoc />
