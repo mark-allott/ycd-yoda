@@ -64,4 +64,9 @@ public interface IFileSystemStrategy
 	/// <param name="instructionPointer">The current location of the instruction pointer</param>
 	/// <param name="token">The cancellation token</param>
 	Task WriteCrashDumpAsync(bool writeBinary, byte[] contents, int instructionPointer, CancellationToken token);
+
+	/// <summary>
+	/// Provides the name of the file system's folder
+	/// </summary>
+	string Folder { get; }
 }
