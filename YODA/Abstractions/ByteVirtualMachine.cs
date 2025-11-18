@@ -12,6 +12,8 @@ public class ByteVirtualMachine
 	private readonly IMemoryAccess<byte> _memoryAccess;
 	private readonly IVirtualDisplay<byte> _virtualDisplay;
 	private readonly IFileSystemStrategy _fileSystemStrategy;
+	private readonly IVirtualProcessorStrategy? _vCpu = null;
+	private readonly IVirtualProcessorStrategyAsync? _vAsyncCpu = null;
 	private readonly ILogger _logger;
 	private bool _bootstrapped;
 
@@ -30,14 +32,35 @@ public class ByteVirtualMachine
 	/// </summary>
 	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
 	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
-	/// <param name="virtualDisplay"></param>
+	/// <param name="virtualDisplay">The class implementing a virtual display</param>
+	/// <param name="fileSystemStrategy">The class implementing <see cref="IFileSystemStrategy"/> for the machine</param>
+	/// <param name="vCpu">The class implementing the virtual CPU in a non-async runtime manner</param>
+	/// <param name="logger">The logging class to use for output</param>
+	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IVirtualDisplay<byte> virtualDisplay,
+		IFileSystemStrategy fileSystemStrategy, IVirtualProcessorStrategy vCpu, ILogger logger)
+		: this(isDebug, memoryAccess, virtualDisplay, fileSystemStrategy, logger)
+	{
+		_vCpu = vCpu ?? throw new ArgumentNullException(nameof(vCpu));
+	}
+
+	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IVirtualDisplay<byte> virtualDisplay,
+		IFileSystemStrategy fileSystemStrategy, IVirtualProcessorStrategyAsync vAsyncCpu, ILogger logger)
+		: this(isDebug, memoryAccess, virtualDisplay, fileSystemStrategy, logger)
+	{
+		_vAsyncCpu = vAsyncCpu ?? throw new ArgumentNullException(nameof(vAsyncCpu));
+	}
+
+	/// <summary>
+	/// Internal constructor, taking common items for the VM 
+	/// </summary>
+	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
+	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
+	/// <param name="virtualDisplay">The class implementing a virtual display</param>
 	/// <param name="fileSystemStrategy">The class implementing <see cref="IFileSystemStrategy"/> for the machine</param>
 	/// <param name="logger">The logging class to use for output</param>
-	public ByteVirtualMachine(bool isDebug,
-		IMemoryAccess<byte> memoryAccess,
-		IVirtualDisplay<byte> virtualDisplay,
-		IFileSystemStrategy fileSystemStrategy,
-		ILogger logger)
+	/// <exception cref="ArgumentNullException"></exception>
+	private ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IVirtualDisplay<byte> virtualDisplay,
+		IFileSystemStrategy fileSystemStrategy, ILogger logger)
 	{
 		_isDebug = isDebug;
 		_memoryAccess = memoryAccess ?? throw new ArgumentNullException(nameof(memoryAccess));
@@ -71,23 +94,55 @@ public class ByteVirtualMachine
 	/// <inheritdoc/>
 	public void Run()
 	{
-		Task.Run(() => RunAsync(CancellationToken.None));
+		//	Run chooses to run non-async variant first, but if not found, will attempt to run the async version in a non-async manner
+		if (_vCpu is not null)
+		{
+			RunCheck();
+			_vCpu.Run();
+		}
+		else
+		{
+			Task.Run(() => RunAsync(CancellationToken.None));
+		}
 	}
 
 	/// <inheritdoc/>
-	public Task RunAsync(CancellationToken token)
+	/// <remarks>
+	/// If there is no async CPU present, an exception is thrown
+	/// </remarks>
+	public async Task RunAsync(CancellationToken token)
+	{
+		if (_vAsyncCpu is null)
+			throw new NotImplementedException("No implementation of virtual CPU is present");
+
+		RunCheck();
+		await _vAsyncCpu.RunAsync(token);
+	}
+
+	#endregion
+
+	#region Methods
+
+	/// <summary>
+	/// Performs a check to see if the CPU is ready to run
+	/// </summary>
+	/// <exception cref="InvalidOperationException"></exception>
+	/// <remarks>
+	/// The system should have called the <see cref="Boot()"/> method prior to calling the <see cref="Run"/> or
+	/// <see cref="RunAsync"/> methods to ensure a program has been loaded into memory for the CPU. If a program is
+	/// present, then the method outputs the "startup" message and returns
+	/// </remarks>
+	private void RunCheck()
 	{
 		if (!_bootstrapped)
 			throw new InvalidOperationException("VirtualMachine is not bootstrapped");
 
 		_logger.Log(LogLevel.Screen, "Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module");
-		_logger.Log(LogLevel.Screen, $"Folder Path: {_fileSystemStrategy.Folder}\n" );
-		_logger.Log(LogLevel.Screen, $"Connecting to Engine Control System.... SUCCESS!" );
-		_logger.Log(LogLevel.Screen, $"Connecting to Landing Control System.... SUCCESS!" );
-		_logger.Log(LogLevel.Screen, $"Connecting to Interplanetary Communication System.... SUCCESS!" );
-		_logger.Log(LogLevel.Screen, $"All systems are GO!" );
-		
-		throw new NotImplementedException();
+		_logger.Log(LogLevel.Screen, $"Folder Path: {_fileSystemStrategy.Folder}\n");
+		_logger.Log(LogLevel.Screen, "Connecting to Engine Control System.... SUCCESS!");
+		_logger.Log(LogLevel.Screen, "Connecting to Landing Control System.... SUCCESS!");
+		_logger.Log(LogLevel.Screen, "Connecting to Interplanetary Communication System.... SUCCESS!");
+		_logger.Log(LogLevel.Screen, "All systems are GO!");
 	}
 
 	#endregion
