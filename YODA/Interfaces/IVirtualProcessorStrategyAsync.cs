@@ -7,5 +7,5 @@ public interface IVirtualProcessorStrategyAsync
 	/// </summary>
 	/// <param name="token">The cancellation token used to signal state to the processor</param>
 	/// <returns></returns>
-	Task Run(CancellationToken token);
+	Task RunAsync(CancellationToken token);
 }
