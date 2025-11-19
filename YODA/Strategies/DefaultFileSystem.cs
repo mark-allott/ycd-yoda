@@ -3,8 +3,8 @@ using SimpleInstructionMachine.Interfaces;
 
 namespace SimpleInstructionMachine.Strategies;
 
-public class DefaultFileSystemStrategy
-	: IFileSystemStrategy
+public class DefaultFileSystem
+	: IFileSystem<byte>
 {
 	#region Fields
 
@@ -32,7 +32,7 @@ public class DefaultFileSystemStrategy
 	/// <summary>
 	/// Default constructor - uses current working directory for virtual file system
 	/// </summary>
-	public DefaultFileSystemStrategy()
+	public DefaultFileSystem()
 		: this(".", new DefaultFileNameStrategy())
 	{
 	}
@@ -43,7 +43,7 @@ public class DefaultFileSystemStrategy
 	/// <param name="folderName"></param>
 	/// <param name="fileNameStrategy"></param>
 	/// <exception cref="DirectoryNotFoundException"></exception>
-	public DefaultFileSystemStrategy(string folderName, IFileNameStrategy fileNameStrategy)
+	public DefaultFileSystem(string folderName, IFileNameStrategy fileNameStrategy)
 	{
 		if (!Directory.Exists(folderName))
 			throw new DirectoryNotFoundException(folderName);
