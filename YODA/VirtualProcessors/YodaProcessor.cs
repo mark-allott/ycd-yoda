@@ -74,7 +74,7 @@ public class YodaProcessor
 		try
 		{
 			await Execute(token);
-			_logger.Log(LogLevel.Info, $"{Environment.NewLine}{Environment.NewLine}Program completed successfully");
+			_logger.Log(LogLevel.Screen, $"{Environment.NewLine}{Environment.NewLine}Program completed successfully");
 		}
 		catch (Exception e)
 		{
