@@ -33,8 +33,7 @@ public static class Program
         var cpu = new YodaProcessor(debug, logger, fileSystem, memorySystem);
         
         //  Define the VM with the specified components  
-        var vm = new ByteVirtualMachine(debug, memorySystem, virtualDisplay, fileSystem,
-            cpu as IVirtualProcessorStrategyAsync, logger);
+        var vm = new ByteVirtualMachine(debug, memorySystem, fileSystem, cpu as IVirtualProcessorStrategyAsync, logger);
         //  Bootstrap the machine - i.e. load the "program" into memory from the file named "boot" in the filesystem
         vm.Boot();
         

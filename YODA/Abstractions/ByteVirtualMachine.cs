@@ -10,7 +10,6 @@ public class ByteVirtualMachine
 
 	private bool _isDebug;
 	private readonly IMemoryAccess<byte> _memoryAccess;
-	private readonly IVirtualDisplay<byte> _virtualDisplay;
 	private readonly IFileSystemStrategy _fileSystemStrategy;
 	private readonly IVirtualProcessorStrategy? _vCpu = null;
 	private readonly IVirtualProcessorStrategyAsync? _vAsyncCpu = null;
@@ -26,13 +25,12 @@ public class ByteVirtualMachine
 	/// </summary>
 	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
 	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
-	/// <param name="virtualDisplay">The class implementing a virtual display</param>
 	/// <param name="fileSystemStrategy">The class implementing <see cref="IFileSystemStrategy"/> for the machine</param>
 	/// <param name="vCpu">The class implementing the virtual CPU in a non-async runtime manner</param>
 	/// <param name="logger">The logging class to use for output</param>
-	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IVirtualDisplay<byte> virtualDisplay,
-		IFileSystemStrategy fileSystemStrategy, IVirtualProcessorStrategy vCpu, ILogger logger)
-		: this(isDebug, memoryAccess, virtualDisplay, fileSystemStrategy, logger)
+	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystemStrategy fileSystemStrategy,
+		IVirtualProcessorStrategy vCpu, ILogger logger)
+		: this(isDebug, memoryAccess, fileSystemStrategy, logger)
 	{
 		_vCpu = vCpu ?? throw new ArgumentNullException(nameof(vCpu));
 	}
@@ -42,14 +40,13 @@ public class ByteVirtualMachine
 	/// </summary>
 	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
 	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
-	/// <param name="virtualDisplay">The class implementing a virtual display</param>
 	/// <param name="fileSystemStrategy">The class implementing <see cref="IFileSystemStrategy"/> for the machine</param>
 	/// <param name="vAsyncCpu">The class implementing the virtual CPU in an async runtime manner</param>
 	/// <param name="logger">The logging class to use for output</param>
 	/// <exception cref="ArgumentNullException"></exception>
-	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IVirtualDisplay<byte> virtualDisplay,
-		IFileSystemStrategy fileSystemStrategy, IVirtualProcessorStrategyAsync vAsyncCpu, ILogger logger)
-		: this(isDebug, memoryAccess, virtualDisplay, fileSystemStrategy, logger)
+	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystemStrategy fileSystemStrategy,
+		IVirtualProcessorStrategyAsync vAsyncCpu, ILogger logger)
+		: this(isDebug, memoryAccess, fileSystemStrategy, logger)
 	{
 		_vAsyncCpu = vAsyncCpu ?? throw new ArgumentNullException(nameof(vAsyncCpu));
 	}
@@ -59,16 +56,13 @@ public class ByteVirtualMachine
 	/// </summary>
 	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
 	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
-	/// <param name="virtualDisplay">The class implementing a virtual display</param>
 	/// <param name="fileSystemStrategy">The class implementing <see cref="IFileSystemStrategy"/> for the machine</param>
 	/// <param name="logger">The logging class to use for output</param>
 	/// <exception cref="ArgumentNullException"></exception>
-	private ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IVirtualDisplay<byte> virtualDisplay,
-		IFileSystemStrategy fileSystemStrategy, ILogger logger)
+	private ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystemStrategy fileSystemStrategy, ILogger logger)
 	{
 		_isDebug = isDebug;
 		_memoryAccess = memoryAccess ?? throw new ArgumentNullException(nameof(memoryAccess));
-		_virtualDisplay = virtualDisplay ?? throw new ArgumentNullException(nameof(virtualDisplay));
 		_fileSystemStrategy = fileSystemStrategy ?? throw new ArgumentNullException(nameof(fileSystemStrategy));
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
