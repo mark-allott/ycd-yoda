@@ -19,16 +19,10 @@ public class ByteVirtualMachine
 
 	#endregion
 
-	#region Properties
-
-	//
-
-	#endregion
-
 	#region Constructors
 
 	/// <summary>
-	/// Alternate constructor allowing specific size of memory and the <see cref="IFileSystemStrategy"/> implementation to use for the underlying file system
+	/// Alternate constructor allowing specification of a virtual cpu to run in a non-async manner
 	/// </summary>
 	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
 	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
@@ -43,6 +37,16 @@ public class ByteVirtualMachine
 		_vCpu = vCpu ?? throw new ArgumentNullException(nameof(vCpu));
 	}
 
+	/// <summary>
+	/// Alternate constructor allowing specification of a virtual cpu to run in an async manner
+	/// </summary>
+	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
+	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
+	/// <param name="virtualDisplay">The class implementing a virtual display</param>
+	/// <param name="fileSystemStrategy">The class implementing <see cref="IFileSystemStrategy"/> for the machine</param>
+	/// <param name="vAsyncCpu">The class implementing the virtual CPU in an async runtime manner</param>
+	/// <param name="logger">The logging class to use for output</param>
+	/// <exception cref="ArgumentNullException"></exception>
 	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IVirtualDisplay<byte> virtualDisplay,
 		IFileSystemStrategy fileSystemStrategy, IVirtualProcessorStrategyAsync vAsyncCpu, ILogger logger)
 		: this(isDebug, memoryAccess, virtualDisplay, fileSystemStrategy, logger)
