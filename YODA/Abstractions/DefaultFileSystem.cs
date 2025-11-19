@@ -1,7 +1,8 @@
 using System.Text;
 using SimpleInstructionMachine.Interfaces;
+using SimpleInstructionMachine.Strategies;
 
-namespace SimpleInstructionMachine.Strategies;
+namespace SimpleInstructionMachine.Abstractions;
 
 public class DefaultFileSystem
 	: IFileSystem<byte>
