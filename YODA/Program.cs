@@ -28,7 +28,7 @@ public static class Program
         //  Filename strategy is the default for the exercises (0..7 as-is, 8..15 adds .txt extension)
         var filenameStrategy = new DefaultFileNameStrategy();
         //  Default filesystem uses the specified folder and naming strategy
-        var fileSystem = new DefaultFileSystemStrategy(folder, filenameStrategy);
+        var fileSystem = new DefaultFileSystem(folder, filenameStrategy);
         //  Define the CPU to be used for the VM
         var cpu = new YodaProcessor(debug, logger, fileSystem, memorySystem);
         

@@ -12,7 +12,7 @@ public class YodaProcessor
 
 	private readonly bool _isDebug;
 	private readonly ILogger _logger;
-	private readonly IFileSystemStrategy _fileSystemStrategy;
+	private readonly IFileSystem<byte> _fileSystem;
 	private readonly IMemoryAccess<byte> _memoryAccess;
 	private bool _interruptsEnabled;
 
@@ -44,12 +44,12 @@ public class YodaProcessor
 
 	#region Constructors
 
-	public YodaProcessor(bool isDebug, ILogger logger, IFileSystemStrategy fileSystemStrategy,
+	public YodaProcessor(bool isDebug, ILogger logger, IFileSystem<byte> fileSystem,
 		IMemoryAccess<byte> memoryAccess)
 	{
 		_isDebug = isDebug;
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
-		_fileSystemStrategy = fileSystemStrategy ?? throw new ArgumentNullException(nameof(fileSystemStrategy));
+		_fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 		_memoryAccess = memoryAccess ?? throw new ArgumentNullException(nameof(memoryAccess));
 	}
 
@@ -86,9 +86,9 @@ public class YodaProcessor
 			_logger.Log(LogLevel.Critical, sb.ToString());
 
 			// Dump as bytes into the file system
-			await _fileSystemStrategy.WriteCrashDumpAsync(true, _memoryAccess.Memory, InstructionPointer, token);
+			await _fileSystem.WriteCrashDumpAsync(true, _memoryAccess.Memory, InstructionPointer, token);
 			// Dump as text into the file system
-			await _fileSystemStrategy.WriteCrashDumpAsync(false, _memoryAccess.Memory, InstructionPointer, token);
+			await _fileSystem.WriteCrashDumpAsync(false, _memoryAccess.Memory, InstructionPointer, token);
 			_logger.Log(LogLevel.Critical,
 				"A crash dump containing all the memory has been written to : crash_dump and crash_dump.txt");
 		}
@@ -218,7 +218,7 @@ public class YodaProcessor
 
 		DebugMessageWithCallerInfo($"Writing {length} bytes starting at {sourceLocation:x4} to file {fileNumber}.");
 
-		await _fileSystemStrategy.SaveToFileAsync(fileNumber,
+		await _fileSystem.SaveToFileAsync(fileNumber,
 			_memoryAccess.Memory[sourceLocation..(sourceLocation + length)], token);
 
 		InstructionPointer += 4;
@@ -232,7 +232,7 @@ public class YodaProcessor
 		var fileNumber = Read(InstructionPointer + 1, opCode, 1);
 		var targetLocation = Read(InstructionPointer + 2, opCode, 0);
 
-		var fileContents = await _fileSystemStrategy.LoadFromFileAsync(fileNumber, token);
+		var fileContents = await _fileSystem.LoadFromFileAsync(fileNumber, token);
 		if (fileContents.Length + targetLocation > _memoryAccess.MemorySize)
 			throw new OutOfMemoryException("File too large");
 		_memoryAccess.WriteToMemory(targetLocation, fileContents);

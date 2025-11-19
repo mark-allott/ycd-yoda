@@ -10,7 +10,7 @@ public class ByteVirtualMachine
 
 	private bool _isDebug;
 	private readonly IMemoryAccess<byte> _memoryAccess;
-	private readonly IFileSystemStrategy _fileSystemStrategy;
+	private readonly IFileSystem<byte> _fileSystem;
 	private readonly IVirtualProcessorStrategy? _vCpu = null;
 	private readonly IVirtualProcessorStrategyAsync? _vAsyncCpu = null;
 	private readonly ILogger _logger;
@@ -25,12 +25,12 @@ public class ByteVirtualMachine
 	/// </summary>
 	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
 	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
-	/// <param name="fileSystemStrategy">The class implementing <see cref="IFileSystemStrategy"/> for the machine</param>
+	/// <param name="fileSystem">The class implementing <see cref="IFileSystem{T}"/> for the machine</param>
 	/// <param name="vCpu">The class implementing the virtual CPU in a non-async runtime manner</param>
 	/// <param name="logger">The logging class to use for output</param>
-	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystemStrategy fileSystemStrategy,
+	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystem<byte> fileSystem,
 		IVirtualProcessorStrategy vCpu, ILogger logger)
-		: this(isDebug, memoryAccess, fileSystemStrategy, logger)
+		: this(isDebug, memoryAccess, fileSystem, logger)
 	{
 		_vCpu = vCpu ?? throw new ArgumentNullException(nameof(vCpu));
 	}
@@ -40,13 +40,13 @@ public class ByteVirtualMachine
 	/// </summary>
 	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
 	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
-	/// <param name="fileSystemStrategy">The class implementing <see cref="IFileSystemStrategy"/> for the machine</param>
+	/// <param name="fileSystem">The class implementing <see cref="IFileSystem{T}"/> for the machine</param>
 	/// <param name="vAsyncCpu">The class implementing the virtual CPU in an async runtime manner</param>
 	/// <param name="logger">The logging class to use for output</param>
 	/// <exception cref="ArgumentNullException"></exception>
-	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystemStrategy fileSystemStrategy,
+	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystem<byte> fileSystem,
 		IVirtualProcessorStrategyAsync vAsyncCpu, ILogger logger)
-		: this(isDebug, memoryAccess, fileSystemStrategy, logger)
+		: this(isDebug, memoryAccess, fileSystem, logger)
 	{
 		_vAsyncCpu = vAsyncCpu ?? throw new ArgumentNullException(nameof(vAsyncCpu));
 	}
@@ -56,14 +56,14 @@ public class ByteVirtualMachine
 	/// </summary>
 	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
 	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
-	/// <param name="fileSystemStrategy">The class implementing <see cref="IFileSystemStrategy"/> for the machine</param>
+	/// <param name="fileSystem">The class implementing <see cref="IFileSystem{T}"/> for the machine</param>
 	/// <param name="logger">The logging class to use for output</param>
 	/// <exception cref="ArgumentNullException"></exception>
-	private ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystemStrategy fileSystemStrategy, ILogger logger)
+	private ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystem<byte> fileSystem, ILogger logger)
 	{
 		_isDebug = isDebug;
 		_memoryAccess = memoryAccess ?? throw new ArgumentNullException(nameof(memoryAccess));
-		_fileSystemStrategy = fileSystemStrategy ?? throw new ArgumentNullException(nameof(fileSystemStrategy));
+		_fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
@@ -75,7 +75,7 @@ public class ByteVirtualMachine
 	public void Boot()
 	{
 		//	Load the file from the filesystem and bootstrap using the bytes read from the file
-		Boot(_fileSystemStrategy.LoadBootFile());
+		Boot(_fileSystem.LoadBootFile());
 	}
 
 	/// <inheritdoc/>
@@ -136,7 +136,7 @@ public class ByteVirtualMachine
 			throw new InvalidOperationException("VirtualMachine is not bootstrapped");
 
 		_logger.Log(LogLevel.Screen, "Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module");
-		_logger.Log(LogLevel.Screen, $"Folder Path: {_fileSystemStrategy.Folder}\n");
+		_logger.Log(LogLevel.Screen, $"Folder Path: {_fileSystem.Folder}\n");
 		_logger.Log(LogLevel.Screen, "Connecting to Engine Control System.... SUCCESS!");
 		_logger.Log(LogLevel.Screen, "Connecting to Landing Control System.... SUCCESS!");
 		_logger.Log(LogLevel.Screen, "Connecting to Interplanetary Communication System.... SUCCESS!");
