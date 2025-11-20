@@ -27,7 +27,8 @@ public interface IMemoryAccess<T>
 	/// <summary>
 	/// Provides access to all the machine memory as an array
 	/// </summary>
-	/// <remarks>Implementors should consider making this a read-only property, with writing performed only by <see cref="WriteToMemory"/></remarks>
+	/// <remarks>Implementors should consider making this a read-only property, with writing performed only by
+	/// <see cref="WriteToMemory(int,T)"/> or <see cref="WriteToMemory(int, T[])"/></remarks>
 	T[] Memory { get; }
 	
 	/// <summary>
