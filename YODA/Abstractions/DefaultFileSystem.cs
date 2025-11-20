@@ -81,9 +81,15 @@ public class DefaultFileSystem
 	}
 
 	/// <inheritdoc/>
-	public void WriteCrashDump(bool writeBinary, byte[] contents, int instructionPointer)
+	public void WriteBinaryCrashDump(byte[] contents)
 	{
-		Task.Run(() => WriteCrashDumpAsync(writeBinary, contents, instructionPointer, CancellationToken.None));
+		Task.Run(() => WriteBinaryCrashDumpAsync(contents, CancellationToken.None));
+	}
+
+	/// <inheritdoc/>
+	public void WriteTextCrashDump(byte[] contents, int instructionPointer)
+	{
+		Task.Run(() => WriteTextCrashDumpAsync(contents, instructionPointer, CancellationToken.None));
 	}
 
 	/// <inheritdoc/>
@@ -117,18 +123,21 @@ public class DefaultFileSystem
 	}
 
 	/// <inheritdoc/>
-	public Task WriteCrashDumpAsync(bool writeBinary, byte[] contents, int instructionPointer, CancellationToken token)
+	public async Task WriteBinaryCrashDumpAsync(byte[] contents, CancellationToken token)
 	{
-		if (writeBinary)
-			return InternalSaveToFileAsync(CrashDumpFilename, contents, token);
+		await InternalSaveToFileAsync(CrashDumpFilename, contents, token);
 
+	}
+
+	public async Task WriteTextCrashDumpAsync(byte[] contents, int instructionPointer, CancellationToken token)
+	{
 		//	Build the crash dump text in a StringBuilder first
 		var sb = new StringBuilder();
 		for (var i = 0; i < contents.Length; i++)
 			sb.AppendLine($"{i:X2}   {contents[i]}{(i == instructionPointer ? "    <---- INSTRUCTION POINTER" : "")}");
 		//	Convert from string to array of bytes
 		var bytes = Encoding.ASCII.GetBytes(sb.ToString());
-		return InternalSaveToFileAsync(Path.ChangeExtension(CrashDumpFilename, ".txt"), bytes, token);
+		await InternalSaveToFileAsync(Path.ChangeExtension(CrashDumpFilename, ".txt"), bytes, token);
 	}
 
 	#endregion
