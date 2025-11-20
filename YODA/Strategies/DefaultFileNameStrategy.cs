@@ -19,5 +19,14 @@ public class DefaultFileNameStrategy
 		};
 	}
 
+	/// <inheritdoc/>
+	public string BootFileName => "boot";
+
+	/// <inheritdoc/>
+	public string BinaryCrashDumpFileName => "crash_dump";
+
+	/// <inheritdoc/>
+	public string TextCrashDumpFileName => Path.ChangeExtension(BinaryCrashDumpFileName, "txt");
+
 	#endregion
 }
