@@ -81,4 +81,19 @@ public interface IFileSystem<T>
 	/// Provides the name of the file system's folder
 	/// </summary>
 	string Folder { get; }
+
+	/// <summary>
+	/// Provides the name of the boot file
+	/// </summary>
+	string BootFileName { get; }
+
+	/// <summary>
+	/// Provides the name of the binary crash dump file
+	/// </summary>
+	string BinaryCrashDumpFileName { get; }
+
+	/// <summary>
+	/// Provides the name of the text crash dump file
+	/// </summary>
+	string TextCrashDumpFileName { get; }
 }
