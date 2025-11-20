@@ -25,12 +25,17 @@ public interface IFileSystem<T>
 	T[] LoadBootFile();
 
 	/// <summary>
-	/// Writes the memory <paramref name="contents"/> to the crash dump file in either binary of text format
+	/// Writes the memory <paramref name="contents"/> to the crash dump file in binary format
 	/// </summary>
-	/// <param name="writeBinary">A flag indicating whether to write the binary or text representation of the crash dump file</param>
+	/// <param name="contents">The memory contents to dump</param>
+	void WriteBinaryCrashDump(T[] contents);
+
+	/// <summary>
+	/// Writes the memory <paramref name="contents"/> to the crash dump file in text format
+	/// </summary>
 	/// <param name="contents">The memory contents to dump</param>
 	/// <param name="instructionPointer">The current location of the instruction pointer</param>
-	void WriteCrashDump(bool writeBinary, T[] contents, int instructionPointer);
+	void WriteTextCrashDump(T[] contents, int instructionPointer);
 
 	/// <summary>
 	/// Performs the writing of the specified <paramref name="contents"/> to the underlying virtual file system with the
@@ -58,13 +63,19 @@ public interface IFileSystem<T>
 	Task<T[]> LoadBootFileAsync(CancellationToken token);
 
 	/// <summary>
-	/// Writes the memory <paramref name="contents"/> to the crash dump file in either binary of text format with async support
+	/// Writes the memory <paramref name="contents"/> to the crash dump file in binary format with async support
 	/// </summary>
-	/// <param name="writeBinary">A flag indicating whether to write the binary or text representation of the crash dump file</param>
+	/// <param name="contents">The memory contents to dump</param>
+	/// <param name="token">The cancellation token</param>
+	Task WriteBinaryCrashDumpAsync(T[] contents, CancellationToken token);
+
+	/// <summary>
+	/// Writes the memory <paramref name="contents"/> to the crash dump file in text format with async support
+	/// </summary>
 	/// <param name="contents">The memory contents to dump</param>
 	/// <param name="instructionPointer">The current location of the instruction pointer</param>
 	/// <param name="token">The cancellation token</param>
-	Task WriteCrashDumpAsync(bool writeBinary, T[] contents, int instructionPointer, CancellationToken token);
+	Task WriteTextCrashDumpAsync(T[] contents, int instructionPointer, CancellationToken token);
 
 	/// <summary>
 	/// Provides the name of the file system's folder
