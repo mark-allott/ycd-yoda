@@ -9,8 +9,10 @@ public class DefaultFileSystem
 {
 	#region Fields
 
-	private const string BootFilename = "boot";
-	private const string CrashDumpFilename = "crash_dump";
+	/// <summary>
+	/// The naming strategy to be used for filenames
+	/// </summary>
+	private readonly IFileNameStrategy _fileNameStrategy;
 
 	#endregion
 
@@ -22,9 +24,14 @@ public class DefaultFileSystem
 	public string Folder { get; private set; }
 
 	/// <summary>
-	/// The naming strategy to be used for filenames
+	/// Exposes the name of the binary crash dump file from the <see cref="IFileNameStrategy"/>
 	/// </summary>
-	public IFileNameStrategy FileNameStrategy { get; }
+	public string BinaryCrashDumpFilename => _fileNameStrategy.BinaryCrashDumpFileName;
+
+	/// <summary>
+	/// Exposes the name of the text crash dump file from the <see cref="IFileNameStrategy"/>
+	/// </summary>
+	public string TextCrashDumpFilename => _fileNameStrategy.TextCrashDumpFileName;
 
 	#endregion
 
@@ -52,7 +59,7 @@ public class DefaultFileSystem
 		//	Locate the fully-qualified name of the folder from folderName: 
 		Folder = Path.GetFullPath(folderName);
 		//	Set the naming strategy
-		FileNameStrategy = fileNameStrategy;
+		_fileNameStrategy = fileNameStrategy;
 	}
 
 	#endregion
@@ -119,16 +126,16 @@ public class DefaultFileSystem
 	/// <inheritdoc/>
 	public async Task<byte[]> LoadBootFileAsync(CancellationToken token)
 	{
-		return await InternalLoadFromFileAsync(BootFilename, token);
+		return await InternalLoadFromFileAsync(_fileNameStrategy.BootFileName, token);
 	}
 
 	/// <inheritdoc/>
 	public async Task WriteBinaryCrashDumpAsync(byte[] contents, CancellationToken token)
 	{
-		await InternalSaveToFileAsync(CrashDumpFilename, contents, token);
-
+		await InternalSaveToFileAsync(BinaryCrashDumpFilename, contents, token);
 	}
 
+	/// <inheritdoc/>
 	public async Task WriteTextCrashDumpAsync(byte[] contents, int instructionPointer, CancellationToken token)
 	{
 		//	Build the crash dump text in a StringBuilder first
@@ -137,7 +144,7 @@ public class DefaultFileSystem
 			sb.AppendLine($"{i:X2}   {contents[i]}{(i == instructionPointer ? "    <---- INSTRUCTION POINTER" : "")}");
 		//	Convert from string to array of bytes
 		var bytes = Encoding.ASCII.GetBytes(sb.ToString());
-		await InternalSaveToFileAsync(Path.ChangeExtension(CrashDumpFilename, ".txt"), bytes, token);
+		await InternalSaveToFileAsync(TextCrashDumpFilename, bytes, token);
 	}
 
 	#endregion
@@ -167,13 +174,13 @@ public class DefaultFileSystem
 	}
 
 	/// <summary>
-	/// Gets the name of the file from the <see cref="FileNameStrategy"/>
+	/// Gets the name of the file from the <see cref="_fileNameStrategy"/>
 	/// </summary>
 	/// <param name="fileNumber">The number of the file</param>
 	/// <returns>The file name</returns>
 	private string GetFileName(int fileNumber)
 	{
-		return FileNameStrategy.GetFileName((byte)fileNumber);
+		return _fileNameStrategy.GetFileName((byte)fileNumber);
 	}
 
 	/// <summary>
