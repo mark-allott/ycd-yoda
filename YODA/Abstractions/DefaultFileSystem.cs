@@ -24,14 +24,19 @@ public class DefaultFileSystem
 	public string Folder { get; private set; }
 
 	/// <summary>
+	/// Exposes the name of the boot file from the <see cref="IFileNameStrategy"/>
+	/// </summary>
+	public string BootFileName => _fileNameStrategy.BootFileName;
+
+	/// <summary>
 	/// Exposes the name of the binary crash dump file from the <see cref="IFileNameStrategy"/>
 	/// </summary>
-	public string BinaryCrashDumpFilename => _fileNameStrategy.BinaryCrashDumpFileName;
+	public string BinaryCrashDumpFileName => _fileNameStrategy.BinaryCrashDumpFileName;
 
 	/// <summary>
 	/// Exposes the name of the text crash dump file from the <see cref="IFileNameStrategy"/>
 	/// </summary>
-	public string TextCrashDumpFilename => _fileNameStrategy.TextCrashDumpFileName;
+	public string TextCrashDumpFileName => _fileNameStrategy.TextCrashDumpFileName;
 
 	#endregion
 
@@ -132,7 +137,7 @@ public class DefaultFileSystem
 	/// <inheritdoc/>
 	public async Task WriteBinaryCrashDumpAsync(byte[] contents, CancellationToken token)
 	{
-		await InternalSaveToFileAsync(BinaryCrashDumpFilename, contents, token);
+		await InternalSaveToFileAsync(BinaryCrashDumpFileName, contents, token);
 	}
 
 	/// <inheritdoc/>
@@ -144,7 +149,7 @@ public class DefaultFileSystem
 			sb.AppendLine($"{i:X2}   {contents[i]}{(i == instructionPointer ? "    <---- INSTRUCTION POINTER" : "")}");
 		//	Convert from string to array of bytes
 		var bytes = Encoding.ASCII.GetBytes(sb.ToString());
-		await InternalSaveToFileAsync(TextCrashDumpFilename, bytes, token);
+		await InternalSaveToFileAsync(TextCrashDumpFileName, bytes, token);
 	}
 
 	#endregion
