@@ -86,11 +86,11 @@ public class YodaProcessor
 			_logger.Log(LogLevel.Critical, sb.ToString());
 
 			// Dump as bytes into the file system
-			await _fileSystem.WriteCrashDumpAsync(true, _memoryAccess.Memory, InstructionPointer, token);
+			await _fileSystem.WriteBinaryCrashDumpAsync(_memoryAccess.Memory, token);
 			// Dump as text into the file system
-			await _fileSystem.WriteCrashDumpAsync(false, _memoryAccess.Memory, InstructionPointer, token);
+			await _fileSystem.WriteTextCrashDumpAsync(_memoryAccess.Memory, InstructionPointer, token);
 			_logger.Log(LogLevel.Critical,
-				"A crash dump containing all the memory has been written to : crash_dump and crash_dump.txt");
+				$"A crash dump containing all the memory has been written to : '{_fileSystem.BinaryCrashDumpFileName}' and '{_fileSystem.TextCrashDumpFileName}'");
 		}
 	}
 
