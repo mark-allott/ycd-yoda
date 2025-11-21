@@ -20,7 +20,7 @@ public static class Program
         //  Original solution did not have DI support, so continuing that scheme here (for now)
         
         //  Logging is to the Console
-        var logger = new ConsoleLogger(debug);
+        var logger = new ConsoleLogger(debug, MessageFormatter.FormatMessage);
         //  Virtual display uses the console logger
         var virtualDisplay = new ByteVirtualDisplay(logger, KnownMemory.ControlFlags);
         //  memory system uses the configured virtual display if updates are required
