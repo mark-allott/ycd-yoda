@@ -11,7 +11,7 @@ public enum LogLevel
 	Info,
 	[Description("Warn")]
 	Warning,
-	[Description("Err")]
+	[Description("Err ")]
 	Error,
 	[Description("Crit")]
 	Critical,
