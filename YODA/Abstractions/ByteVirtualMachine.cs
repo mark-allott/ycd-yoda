@@ -10,8 +10,8 @@ public class ByteVirtualMachine
 
 	private readonly IMemoryAccess<byte> _memoryAccess;
 	private readonly IFileSystem<byte> _fileSystem;
-	private readonly IVirtualProcessorStrategy? _vCpu = null;
-	private readonly IVirtualProcessorStrategyAsync? _vAsyncCpu = null;
+	private readonly IVirtualProcessorStrategy? _vCpu;
+	private readonly IVirtualProcessorStrategyAsync? _vAsyncCpu;
 	private readonly ILogger _logger;
 	private bool _bootstrapped;
 
@@ -22,12 +22,11 @@ public class ByteVirtualMachine
 	/// <summary>
 	/// Alternate constructor allowing specification of a virtual cpu to run in a non-async manner
 	/// </summary>
-	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
 	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
 	/// <param name="fileSystem">The class implementing <see cref="IFileSystem{T}"/> for the machine</param>
 	/// <param name="vCpu">The class implementing the virtual CPU in a non-async runtime manner</param>
 	/// <param name="logger">The logging class to use for output</param>
-	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystem<byte> fileSystem,
+	public ByteVirtualMachine(IMemoryAccess<byte> memoryAccess, IFileSystem<byte> fileSystem,
 		IVirtualProcessorStrategy vCpu, ILogger logger)
 		: this(memoryAccess, fileSystem, logger)
 	{
@@ -37,13 +36,12 @@ public class ByteVirtualMachine
 	/// <summary>
 	/// Alternate constructor allowing specification of a virtual cpu to run in an async manner
 	/// </summary>
-	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
 	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
 	/// <param name="fileSystem">The class implementing <see cref="IFileSystem{T}"/> for the machine</param>
 	/// <param name="vAsyncCpu">The class implementing the virtual CPU in an async runtime manner</param>
 	/// <param name="logger">The logging class to use for output</param>
 	/// <exception cref="ArgumentNullException"></exception>
-	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystem<byte> fileSystem,
+	public ByteVirtualMachine(IMemoryAccess<byte> memoryAccess, IFileSystem<byte> fileSystem,
 		IVirtualProcessorStrategyAsync vAsyncCpu, ILogger logger)
 		: this(memoryAccess, fileSystem, logger)
 	{
