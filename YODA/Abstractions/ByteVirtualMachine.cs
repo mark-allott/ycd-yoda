@@ -8,7 +8,6 @@ public class ByteVirtualMachine
 {
 	#region Fields
 
-	private bool _isDebug;
 	private readonly IMemoryAccess<byte> _memoryAccess;
 	private readonly IFileSystem<byte> _fileSystem;
 	private readonly IVirtualProcessorStrategy? _vCpu = null;
@@ -30,7 +29,7 @@ public class ByteVirtualMachine
 	/// <param name="logger">The logging class to use for output</param>
 	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystem<byte> fileSystem,
 		IVirtualProcessorStrategy vCpu, ILogger logger)
-		: this(isDebug, memoryAccess, fileSystem, logger)
+		: this(memoryAccess, fileSystem, logger)
 	{
 		_vCpu = vCpu ?? throw new ArgumentNullException(nameof(vCpu));
 	}
@@ -46,7 +45,7 @@ public class ByteVirtualMachine
 	/// <exception cref="ArgumentNullException"></exception>
 	public ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystem<byte> fileSystem,
 		IVirtualProcessorStrategyAsync vAsyncCpu, ILogger logger)
-		: this(isDebug, memoryAccess, fileSystem, logger)
+		: this(memoryAccess, fileSystem, logger)
 	{
 		_vAsyncCpu = vAsyncCpu ?? throw new ArgumentNullException(nameof(vAsyncCpu));
 	}
@@ -54,14 +53,12 @@ public class ByteVirtualMachine
 	/// <summary>
 	/// Internal constructor, taking common items for the VM 
 	/// </summary>
-	/// <param name="isDebug">Determines whether the machine is running in "debug" mode</param>
 	/// <param name="memoryAccess">The class implementing memory access for the machine</param>
 	/// <param name="fileSystem">The class implementing <see cref="IFileSystem{T}"/> for the machine</param>
 	/// <param name="logger">The logging class to use for output</param>
 	/// <exception cref="ArgumentNullException"></exception>
-	private ByteVirtualMachine(bool isDebug, IMemoryAccess<byte> memoryAccess, IFileSystem<byte> fileSystem, ILogger logger)
+	private ByteVirtualMachine(IMemoryAccess<byte> memoryAccess, IFileSystem<byte> fileSystem, ILogger logger)
 	{
-		_isDebug = isDebug;
 		_memoryAccess = memoryAccess ?? throw new ArgumentNullException(nameof(memoryAccess));
 		_fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
