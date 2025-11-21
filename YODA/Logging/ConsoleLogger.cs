@@ -6,13 +6,16 @@ namespace SimpleInstructionMachine.Logging;
 public class ConsoleLogger
 	: ILogger
 {
+	private readonly Func<LogLevel, string, string> _formatter;
+
 	#region Constructor
 
-	public ConsoleLogger(bool isDebug)
+	public ConsoleLogger(bool isDebug, Func<LogLevel, string, string> formatter)
 	{
 		LogLevel = isDebug
 			? LogLevel.Debug
 			: LogLevel.Error;
+		_formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
 	}
 
 	#endregion
@@ -31,7 +34,7 @@ public class ConsoleLogger
 		if (!IsEnabled(level))
 			return;
 
-		var consoleOutput = MessageFormatter.FormatMessage(level, message);
+		var consoleOutput = _formatter(level, message);
 		if (level is LogLevel.Error or LogLevel.Critical)
 			Console.Error.Write(consoleOutput);
 		else
